@@ -13,7 +13,7 @@
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/sonexa-ai.git
+git clone https://github.com/julianthant/sonexa-ai.git
 cd sonexa-ai
 
 # 2. Set up development environment
@@ -221,7 +221,7 @@ Sonexa AI is a comprehensive voice transcription SaaS platform that allows users
 1. **Clone and Setup**
 
    ```bash
-   git clone https://github.com/yourusername/sonexa-ai.git
+   git clone https://github.com/julianthant/sonexa-ai.git
    cd sonexa-ai
    git checkout develop
    ```
@@ -739,17 +739,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Team
 
-- **Lead Developer**: [Your Name](https://github.com/yourusername)
-- **AI Specialist**: [Team Member](https://github.com/teammate)
-- **DevOps Engineer**: [Team Member](https://github.com/teammate)
+- **Lead Developer**: [Hein Thant Zaw](https://github.com/julianthant)
 
 ---
 
 ## 📞 Support
 
-- **Documentation**: [Wiki](https://github.com/yourusername/sonexa-ai/wiki)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/sonexa-ai/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/sonexa-ai/discussions)
+- **Documentation**: [Wiki](https://github.com/julianthant/sonexa-ai/wiki)
+- **Issues**: [GitHub Issues](https://github.com/julianthant/sonexa-ai/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/julianthant/sonexa-ai/discussions)
 - **Email**: support@sonexa.ai
 - **Discord**: [Join our community](https://discord.gg/sonexa-ai)
 
@@ -769,6 +767,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ for developers who love clean code and professional workflows**
 
-[⭐ Star this repo](https://github.com/yourusername/sonexa-ai) | [🐛 Report Bug](https://github.com/yourusername/sonexa-ai/issues) | [💡 Request Feature](https://github.com/yourusername/sonexa-ai/issues)
+[⭐ Star this repo](https://github.com/julianthant/sonexa-ai) | [🐛 Report Bug](https://github.com/julianthant/sonexa-ai/issues) | [💡 Request Feature](https://github.com/julianthant/sonexa-ai/issues)
 
 </div>
