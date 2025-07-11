@@ -60,10 +60,10 @@ Sonexa AI is a comprehensive voice transcription SaaS platform that allows users
 
 **Development Workflow: 🟢 100% Complete**
 
-- ✅ Professional Git branching strategy
-- ✅ Automated workflow scripts (git-setup.bat, git-merge-feature.bat, git-release.bat)
+- ✅ Professional Git branching strategy (GitFlow)
+- ✅ Manual Git workflow with AI-assisted documentation
 - ✅ Comprehensive .gitignore configuration
-- ✅ Documentation and README maintenance process
+- ✅ Documentation maintenance process (manual updates)
 
 **Security & Configuration: 🟢 90% Complete**
 
@@ -537,7 +537,7 @@ if (finalConfidence > 0.8) {
 
 ### 🌳 Git Branching Strategy
 
-We use **GitFlow** with automated scripts for professional development:
+We use **GitFlow** for professional development with manual Git operations:
 
 ```
 main (production)
@@ -550,22 +550,26 @@ main (production)
 └── release/v1.0.0
 ```
 
-### 🚀 Quick Commands
+### 🚀 Manual Workflow
 
 ```bash
-# Setup branches (run once)
-./git-setup.bat
+# Create new feature branch
+git checkout develop
+git pull origin develop
+git checkout -b feature/your-feature-name
 
-# Commit current work
-./git-commit-initial.bat
+# Work on feature (commit as needed)
+git add .
+git commit -m "feat: add your feature"
 
-# Daily development
-git checkout feature/your-feature
-# ... make changes ...
-./git-merge-feature.bat
+# Merge when complete
+git checkout develop
+git pull origin develop
+git merge feature/your-feature-name --no-ff
+git push origin develop
 
-# Production release
-./git-release.bat
+# Clean up
+git branch -d feature/your-feature-name
 ```
 
 ### 📝 Commit Standards
