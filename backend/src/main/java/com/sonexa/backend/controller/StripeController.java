@@ -43,7 +43,7 @@ public class StripeController {
     @Autowired
     private StripePaymentService stripePaymentService;
 
-    @Value("${stripe.webhook.secret}")
+    @Value("${STRIPE_WEBHOOK_SECRET}")
     private String webhookSecret;
 
     /**
@@ -181,14 +181,22 @@ public class StripeController {
 
         // Handle the event
         switch (event.getType()) {
-            case "payment_intent.succeeded" -> handlePaymentIntentSucceeded(event);
-            case "payment_intent.payment_failed" -> handlePaymentIntentFailed(event);
-            case "customer.subscription.created" -> handleSubscriptionCreated(event);
-            case "customer.subscription.updated" -> handleSubscriptionUpdated(event);
-            case "customer.subscription.deleted" -> handleSubscriptionDeleted(event);
-            case "invoice.payment_succeeded" -> handleInvoicePaymentSucceeded(event);
-            case "invoice.payment_failed" -> handleInvoicePaymentFailed(event);
-            default -> System.out.println("Unhandled event type: " + event.getType());
+            case "payment_intent.succeeded" ->
+                handlePaymentIntentSucceeded(event);
+            case "payment_intent.payment_failed" ->
+                handlePaymentIntentFailed(event);
+            case "customer.subscription.created" ->
+                handleSubscriptionCreated(event);
+            case "customer.subscription.updated" ->
+                handleSubscriptionUpdated(event);
+            case "customer.subscription.deleted" ->
+                handleSubscriptionDeleted(event);
+            case "invoice.payment_succeeded" ->
+                handleInvoicePaymentSucceeded(event);
+            case "invoice.payment_failed" ->
+                handleInvoicePaymentFailed(event);
+            default ->
+                System.out.println("Unhandled event type: " + event.getType());
         }
 
         return ResponseEntity.ok("Success");

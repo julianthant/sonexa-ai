@@ -11,6 +11,7 @@ import com.sonexa.backend.dto.PaymentIntentRequest;
 import com.sonexa.backend.dto.PaymentIntentResponse;
 import com.sonexa.backend.dto.SubscriptionCreateRequest;
 import com.sonexa.backend.model.SubscriptionTier;
+import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.CustomerSearchResult;
@@ -18,14 +19,13 @@ import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.SetupIntent;
 import com.stripe.model.Subscription;
+import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerSearchParams;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.SetupIntentCreateParams;
 import com.stripe.param.SubscriptionCreateParams;
 import com.stripe.param.SubscriptionUpdateParams;
-import com.stripe.net.Webhook;
-import com.stripe.exception.SignatureVerificationException;
 
 /**
  * Service for handling Stripe payment operations
@@ -33,7 +33,7 @@ import com.stripe.exception.SignatureVerificationException;
 @Service
 public class StripePaymentService {
 
-    @Value("${stripe.webhook.secret}")
+    @Value("${STRIPE_WEBHOOK_SECRET}")
     private String webhookSecret;
 
     /**
@@ -202,8 +202,8 @@ public class StripePaymentService {
     }
 
     /**
-     * Get Stripe price ID for subscription tier
-     * These would be configured in your Stripe dashboard
+     * Get Stripe price ID for subscription tier These would be configured in
+     * your Stripe dashboard
      */
     private String getPriceIdForTier(String tier, boolean isAnnual) {
         // These price IDs should be configured in your Stripe dashboard
@@ -211,10 +211,14 @@ public class StripePaymentService {
         String suffix = isAnnual ? "_annual" : "_monthly";
 
         return switch (tier.toUpperCase()) {
-            case "BASIC" -> "price_basic" + suffix;
-            case "PREMIUM" -> "price_premium" + suffix;
-            case "ENTERPRISE" -> "price_enterprise" + suffix;
-            default -> throw new IllegalArgumentException("Invalid subscription tier: " + tier);
+            case "BASIC" ->
+                "price_basic" + suffix;
+            case "PREMIUM" ->
+                "price_premium" + suffix;
+            case "ENTERPRISE" ->
+                "price_enterprise" + suffix;
+            default ->
+                throw new IllegalArgumentException("Invalid subscription tier: " + tier);
         };
     }
 }
