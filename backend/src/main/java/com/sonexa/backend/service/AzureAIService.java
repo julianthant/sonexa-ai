@@ -21,37 +21,39 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
-public class OpenAIService {
+public class AzureAIService {
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenAIService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AzureAIService.class);
 
-    @Value("${openai.api.key}")
-    private String openaiApiKey;
+    @Value("${azure.ai.key}")
+    private String azureAIKey;
 
-    @Value("${openai.api.url:https://api.openai.com/v1}")
-    private String openaiApiUrl;
+    @Value("${azure.ai.endpoint}")
+    private String azureAIEndpoint;
+
+    @Value("${azure.ai.deployment.name:gpt-35-turbo}")
+    private String deploymentName;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    public OpenAIService() {
+    public AzureAIService() {
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
     }
 
     /**
-     * Generate text completion using OpenAI GPT
+     * Generate text completion using Azure OpenAI Service
      */
-    public String generateCompletion(String prompt, String model, int maxTokens) {
+    public String generateCompletion(String prompt, int maxTokens) {
         try {
-            String url = openaiApiUrl + "/chat/completions";
+            String url = azureAIEndpoint + "/openai/deployments/" + deploymentName + "/chat/completions?api-version=2024-02-15-preview";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(openaiApiKey);
+            headers.set("api-key", azureAIKey);
 
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", model != null ? model : "gpt-3.5-turbo");
             requestBody.put("messages", List.of(
                     Map.of("role", "user", "content", prompt)
             ));
@@ -65,36 +67,18 @@ public class OpenAIService {
                 JsonNode jsonResponse = objectMapper.readTree(response.getBody());
                 return jsonResponse.path("choices").get(0).path("message").path("content").asText();
             } else {
-                logger.error("OpenAI API error: {}", response.getStatusCode());
+                logger.error("Azure AI API error: {}", response.getStatusCode());
                 throw new RuntimeException("Failed to generate completion: " + response.getStatusCode());
             }
 
         } catch (JsonProcessingException | RuntimeException e) {
-            logger.error("Error calling OpenAI API", e);
-            throw new RuntimeException("OpenAI API call failed", e);
+            logger.error("Error calling Azure AI API", e);
+            throw new RuntimeException("Azure AI API call failed", e);
         }
     }
 
     /**
-     * Transcribe audio using OpenAI Whisper
-     */
-    public String transcribeAudio(byte[] audioData, String fileName) {
-        try {
-            // Note: This is a simplified implementation
-            // In a full implementation, you'd use MultiValueMap for multipart data
-            logger.info("Transcribing audio file: {}", fileName);
-
-            // For now, return a placeholder - full multipart implementation would be added here
-            return "Audio transcription functionality - implementation pending multipart support";
-
-        } catch (Exception e) {
-            logger.error("Error transcribing audio", e);
-            throw new RuntimeException("Audio transcription failed", e);
-        }
-    }
-
-    /**
-     * Analyze text for sentiment, entities, etc.
+     * Analyze text using Azure AI
      */
     public Map<String, Object> analyzeText(String text) {
         try {
@@ -104,31 +88,47 @@ public class OpenAIService {
 
                 %s""".formatted(text);
 
-            String analysis = generateCompletion(analysisPrompt, "gpt-3.5-turbo", 300);
+            String analysis = generateCompletion(analysisPrompt, 300);
 
             Map<String, Object> result = new HashMap<>();
             result.put("original_text", text);
             result.put("analysis", analysis);
             result.put("timestamp", System.currentTimeMillis());
+            result.put("ai_provider", "azure");
 
             return result;
 
         } catch (Exception e) {
-            logger.error("Error analyzing text", e);
-            throw new RuntimeException("Text analysis failed", e);
+            logger.error("Error analyzing text with Azure AI", e);
+            throw new RuntimeException("Azure AI text analysis failed", e);
         }
     }
 
     /**
-     * Health check for OpenAI service
+     * Generate chat response using Azure AI
+     */
+    public String generateChatResponse(String message) {
+        try {
+            String chatPrompt = String.format(
+                    "You are a helpful AI assistant. Respond to this message in a conversational way: %s", message
+            );
+            return generateCompletion(chatPrompt, 500);
+        } catch (Exception e) {
+            logger.error("Error generating chat response with Azure AI", e);
+            throw new RuntimeException("Azure AI chat response failed", e);
+        }
+    }
+
+    /**
+     * Health check for Azure AI service
      */
     public boolean isServiceHealthy() {
         try {
             String testPrompt = "Hello, this is a health check.";
-            String response = generateCompletion(testPrompt, "gpt-3.5-turbo", 50);
+            String response = generateCompletion(testPrompt, 50);
             return response != null && !response.trim().isEmpty();
         } catch (Exception e) {
-            logger.error("OpenAI service health check failed", e);
+            logger.error("Azure AI service health check failed", e);
             return false;
         }
     }
