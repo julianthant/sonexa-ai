@@ -73,3 +73,6 @@ yarn-error.log*
 application-secrets.properties
 *.pem
 *.key
+
+# Local update scripts (not for repository)
+update-readme-branches.bat
