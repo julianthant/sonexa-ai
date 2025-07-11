@@ -54,6 +54,8 @@ Thumbs.db
 .env
 .env.local
 .env.production
+.env.dev
+.env.prod
 
 # Logs
 logs/
