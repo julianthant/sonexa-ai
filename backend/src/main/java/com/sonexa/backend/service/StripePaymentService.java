@@ -14,6 +14,7 @@ import com.sonexa.backend.model.SubscriptionTier;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.CustomerSearchResult;
+import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.SetupIntent;
 import com.stripe.model.Subscription;
@@ -23,6 +24,8 @@ import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.SetupIntentCreateParams;
 import com.stripe.param.SubscriptionCreateParams;
 import com.stripe.param.SubscriptionUpdateParams;
+import com.stripe.net.Webhook;
+import com.stripe.exception.SignatureVerificationException;
 
 /**
  * Service for handling Stripe payment operations
@@ -165,20 +168,14 @@ public class StripePaymentService {
     }
 
     /**
-     * Get price ID for subscription tier In production, these would be actual
-     * Stripe price IDs
+     * Verify webhook signature
      */
-    private String getPriceIdForTier(String tier, boolean isAnnual) {
-        return switch (tier.toUpperCase()) {
-            case "BASIC" ->
-                isAnnual ? "price_basic_annual" : "price_basic_monthly";
-            case "PREMIUM" ->
-                isAnnual ? "price_premium_annual" : "price_premium_monthly";
-            case "ENTERPRISE" ->
-                isAnnual ? "price_enterprise_annual" : "price_enterprise_monthly";
-            default ->
-                throw new IllegalArgumentException("Invalid subscription tier: " + tier);
-        };
+    public Event verifyWebhookSignature(String payload, String sigHeader) throws StripeException {
+        try {
+            return Webhook.constructEvent(payload, sigHeader, webhookSecret);
+        } catch (SignatureVerificationException e) {
+            throw new IllegalArgumentException("Invalid webhook signature: " + e.getMessage());
+        }
     }
 
     /**
@@ -202,5 +199,22 @@ public class StripePaymentService {
         }
 
         return monthlyPrice.multiply(new BigDecimal("100")).longValue(); // Convert to cents
+    }
+
+    /**
+     * Get Stripe price ID for subscription tier
+     * These would be configured in your Stripe dashboard
+     */
+    private String getPriceIdForTier(String tier, boolean isAnnual) {
+        // These price IDs should be configured in your Stripe dashboard
+        // For now, returning placeholder values
+        String suffix = isAnnual ? "_annual" : "_monthly";
+
+        return switch (tier.toUpperCase()) {
+            case "BASIC" -> "price_basic" + suffix;
+            case "PREMIUM" -> "price_premium" + suffix;
+            case "ENTERPRISE" -> "price_enterprise" + suffix;
+            default -> throw new IllegalArgumentException("Invalid subscription tier: " + tier);
+        };
     }
 }

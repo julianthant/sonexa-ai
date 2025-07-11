@@ -24,7 +24,6 @@ import com.sonexa.backend.dto.PaymentIntentRequest;
 import com.sonexa.backend.dto.PaymentIntentResponse;
 import com.sonexa.backend.dto.SubscriptionCreateRequest;
 import com.sonexa.backend.service.StripePaymentService;
-import com.sonexa.backend.service.UserService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -43,9 +42,6 @@ public class StripeController {
 
     @Autowired
     private StripePaymentService stripePaymentService;
-
-    @Autowired
-    private UserService userService;
 
     @Value("${stripe.webhook.secret}")
     private String webhookSecret;
@@ -185,29 +181,14 @@ public class StripeController {
 
         // Handle the event
         switch (event.getType()) {
-            case "payment_intent.succeeded":
-                handlePaymentIntentSucceeded(event);
-                break;
-            case "payment_intent.payment_failed":
-                handlePaymentIntentFailed(event);
-                break;
-            case "customer.subscription.created":
-                handleSubscriptionCreated(event);
-                break;
-            case "customer.subscription.updated":
-                handleSubscriptionUpdated(event);
-                break;
-            case "customer.subscription.deleted":
-                handleSubscriptionDeleted(event);
-                break;
-            case "invoice.payment_succeeded":
-                handleInvoicePaymentSucceeded(event);
-                break;
-            case "invoice.payment_failed":
-                handleInvoicePaymentFailed(event);
-                break;
-            default:
-                System.out.println("Unhandled event type: " + event.getType());
+            case "payment_intent.succeeded" -> handlePaymentIntentSucceeded(event);
+            case "payment_intent.payment_failed" -> handlePaymentIntentFailed(event);
+            case "customer.subscription.created" -> handleSubscriptionCreated(event);
+            case "customer.subscription.updated" -> handleSubscriptionUpdated(event);
+            case "customer.subscription.deleted" -> handleSubscriptionDeleted(event);
+            case "invoice.payment_succeeded" -> handleInvoicePaymentSucceeded(event);
+            case "invoice.payment_failed" -> handleInvoicePaymentFailed(event);
+            default -> System.out.println("Unhandled event type: " + event.getType());
         }
 
         return ResponseEntity.ok("Success");
