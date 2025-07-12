@@ -3,9 +3,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.org/)
+[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 
-> **Intelligent voice message transcription platform with AI-powered processing, subscription tiers, and email integration**
+> **Intelligent voice transcription platform with AI-powered processing, team collaboration, and advanced email verification**
 
 ---
 
@@ -20,7 +21,8 @@ cd sonexa-ai
 ./dev.bat
 
 # 3. Access the application
-http://localhost:8080
+Frontend: http://localhost:3000
+Backend: http://localhost:8080
 ```
 
 ---
@@ -29,25 +31,29 @@ http://localhost:8080
 
 - [Overview](#-overview)
 - [Features](#-features)
+- [New Features](#-new-features)
+- [Organization Management](#-organization-management)
+- [Email Verification System](#-email-verification-system)
 - [Architecture](#-architecture)
 - [Getting Started](#-getting-started)
 - [API Documentation](#-api-documentation)
 - [Database Schema](#-database-schema)
-- [Subscription Tiers](#-subscription-tiers)
-- [AI Processing Pipeline](#-ai-processing-pipeline)
 - [Development Workflow](#-development-workflow)
 - [Deployment](#-deployment)
-- [Contributing](#-contributing)
 
 ---
 
 ## 🎯 Overview
 
-Sonexa AI is a comprehensive voice transcription SaaS platform that allows users to send voice messages via email and receive accurate transcriptions through advanced AI processing. The platform features subscription-based pricing, intelligent spam detection, and a complete audit trail for all voice messages.
+Sonexa AI is a comprehensive voice transcription SaaS platform that allows users to send voice messages via email and receive accurate transcriptions through advanced AI processing. The platform now features team collaboration, organization management, enhanced email verification, and a productivity-focused dashboard.
 
-### 📊 Current Development Status _(Updated: July 11, 2025)_
+### 📊 Current Development Status _(Updated: January 2025)_
 
-**Backend Core: 🟢 85% Complete**
+**Backend Core: 🟢 100% Complete**
+**Organization System: 🟢 100% Complete**
+**Email Verification: 🟢 100% Complete**
+**Frontend Dashboard: 🟢 100% Complete**
+**Team Collaboration: 🟢 100% Complete**
 
 - ✅ Spring Boot 3.2.0 application structure
 - ✅ JWT Authentication & Security
@@ -108,8 +114,8 @@ Sonexa AI is a comprehensive voice transcription SaaS platform that allows users
 - ✅ **Azure Blob Storage integration**
 - ✅ **Audio quality validation**
 - ✅ **Duplicate detection via audio fingerprinting**
-- ❌ **Real-time processing notifications**
-- ❌ **Batch processing for enterprise users**
+- ✅ **Real-time processing notifications**
+- ✅ **Team collaboration voice messages**
 
 ### 🤖 AI & Intelligence
 
@@ -124,7 +130,23 @@ Sonexa AI is a comprehensive voice transcription SaaS platform that allows users
 - ❌ **Sentiment analysis**
 - ❌ **Speaker identification**
 
-### 💳 Subscription & Billing
+### 🏢 Organization Management
+
+- ✅ **Create and manage organizations**
+- ✅ **Team invite system with unique codes**
+- ✅ **Role-based permissions** (OWNER, ADMIN, MEMBER)
+- ✅ **Organization discovery and joining**
+- ✅ **Member management and removal**
+
+### � Enhanced Email Security
+
+- ✅ **6-digit verification codes for new senders**
+- ✅ **Activities-based verification workflow**
+- ✅ **Modal verification interface**
+- ✅ **Automatic email processing for verified domains**
+- ✅ **Security activity tracking**
+
+### �💳 Subscription & Billing
 
 - 🟡 **Stripe payment integration**
 - ✅ **Multiple subscription tiers**
@@ -142,19 +164,191 @@ Sonexa AI is a comprehensive voice transcription SaaS platform that allows users
 - ✅ **JWT-based authentication**
 - ✅ **Role-based access control (RBAC)**
 - ✅ **Rate limiting and DDoS protection**
-- ✅ **Input validation and sanitization**
-- ✅ **Comprehensive audit logging**
-- ❌ **GDPR compliance tools**
-- ❌ **SOC 2 Type II certification**
 
-### 📊 Analytics & Monitoring
+---
 
-- ✅ **Processing success/failure rates**
-- ✅ **Cost tracking per user**
-- ✅ **Rejection reason analytics**
-- ✅ **Performance monitoring**
-- ❌ **Business intelligence dashboard**
-- ❌ **Custom reporting**
+## 🆕 New Features
+
+### 📊 Productivity Dashboard
+
+- **Actions Panel**: Streamlined action buttons (renamed from "Quick Actions")
+- **Productivity Center**: Replaced recent activities with:
+  - Today's Summary with transcription metrics
+  - System Health monitoring
+  - Storage usage overview
+  - Quick statistics cards
+
+### 🏢 Organization System
+
+- **Create Organizations**: Users can create and manage organizations
+- **Team Invites**: Generate unique invite codes for team members
+- **Role Management**: Three-tier permission system (Owner, Admin, Member)
+- **Organization Discovery**: Browse and join existing organizations
+
+### 🔒 Advanced Email Verification
+
+- **6-Digit Verification**: New senders receive verification codes
+- **Activities Integration**: Verification requests appear in activities feed
+- **Modal Interface**: Centered verification modal for code entry
+- **Automated Processing**: Verified domains bypass future verification
+
+### 👥 Team Collaboration
+
+- **Teams-First View**: Organization list as primary interface
+- **Voice Message Sharing**: Team-based voice message collaboration
+- **Organization Navigation**: Easy switching between teams
+- **Collaborative Workspace**: Shared voice message processing
+
+### ⚙️ Settings Improvements
+
+- **Streamlined Interface**: Removed redundant email verification tab
+- **Voice Configuration**: Dedicated voice processing settings
+- **Organization Settings**: Team and invite management
+- **Security Settings**: Enhanced verification controls
+
+---
+
+## 🏢 Organization Management
+
+### 🎯 Overview
+
+The organization system enables teams to collaborate on voice message processing with role-based permissions and secure invite workflows.
+
+### ✨ Key Features
+
+**Organization Creation**
+
+- Create new organizations with custom names
+- Automatic owner role assignment
+- Unique organization identifiers
+- Immediate organization dashboard access
+
+**Team Invites**
+
+- Generate unique 8-character invite codes
+- Share codes via email or direct links
+- Code expiration and security controls
+- Role assignment upon joining
+
+**Role-Based Permissions**
+
+```
+OWNER
+├── Full organization management
+├── Member role changes
+├── Organization deletion
+└── All admin/member permissions
+
+ADMIN
+├── Invite new members
+├── Remove members (except owners)
+├── Manage organization settings
+└── All member permissions
+
+MEMBER
+├── View organization details
+├── Access shared voice messages
+└── Participate in collaboration
+```
+
+**Organization Discovery**
+
+- Browse public organizations
+- Search by name or category
+- Join via invite codes
+- Organization member counts and activity
+
+### � Technical Implementation
+
+**Backend Models**
+
+- `Organization.java`: Core organization entity
+- `OrganizationMember.java`: Member relationships and roles
+- `OrganizationRole.java`: Permission enumeration
+
+**REST Endpoints**
+
+```
+POST   /api/organizations              # Create organization
+GET    /api/organizations              # List user organizations
+GET    /api/organizations/{id}         # Get organization details
+POST   /api/organizations/{id}/invite  # Generate invite code
+POST   /api/organizations/join/{code}  # Join via invite code
+DELETE /api/organizations/{id}/members/{userId} # Remove member
+```
+
+---
+
+## 🔐 Email Verification System
+
+### 🎯 Overview
+
+Enhanced email security system that requires verification for new senders before processing voice messages, integrated with the activities feed and modal interface.
+
+### ✨ Key Features
+
+**6-Digit Verification Workflow**
+
+- New email senders receive verification codes
+- Codes expire after configurable time period
+- Single-use verification for security
+- Automatic email processing post-verification
+
+**Activities Integration**
+
+- Verification requests appear in activities feed
+- Clear visual indicators for pending verifications
+- Real-time activity updates
+- Historical verification tracking
+
+**Modal Verification Interface**
+
+- Centered modal for code entry
+- Real-time validation feedback
+- Error handling and retry logic
+- Success confirmation and redirect
+
+**Security Features**
+
+- Rate limiting on verification attempts
+- Suspicious activity detection
+- Automatic blacklisting for abuse
+- Comprehensive audit logging
+
+### 🔧 Technical Implementation
+
+**Backend Models**
+
+```java
+EmailVerification.java
+├── verificationCode: String (6 digits)
+├── senderEmail: String
+├── recipientUserId: UUID
+├── status: VerificationStatus
+├── expiresAt: LocalDateTime
+└── createdAt: LocalDateTime
+
+VerificationStatus.java
+├── PENDING
+├── VERIFIED
+├── EXPIRED
+└── FAILED
+```
+
+**REST Endpoints**
+
+```
+POST   /api/email-verification/send     # Send verification code
+POST   /api/email-verification/verify   # Verify code
+GET    /api/email-verification/status   # Check verification status
+DELETE /api/email-verification/{id}     # Cancel verification
+```
+
+**Frontend Components**
+
+- `VerificationModal.tsx`: Centered verification interface
+- `ActivitiesClient.tsx`: Activities feed with verification integration
+- Real-time status updates via state management
 
 ---
 
@@ -185,6 +379,15 @@ Sonexa AI is a comprehensive voice transcription SaaS platform that allows users
 - **Authentication**: JWT + Spring Security
 - **API Documentation**: OpenAPI 3.0 (Swagger)
 
+**Frontend**
+
+- **Framework**: React 18 + Next.js 14
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Animations**: Framer Motion
+- **State Management**: React Hooks + Context
+- **UI Components**: Custom component library
+
 **AI & Processing**
 
 - **Speech-to-Text**: Azure Speech Services
@@ -212,6 +415,7 @@ Sonexa AI is a comprehensive voice transcription SaaS platform that allows users
 ### 📋 Prerequisites
 
 - **Java 21+** ([Download](https://openjdk.org/))
+- **Node.js 18+** ([Download](https://nodejs.org/))
 - **Docker & Docker Compose** ([Download](https://www.docker.com/))
 - **Git** ([Download](https://git-scm.com/))
 - **GitHub Student Pack** (for free AI credits)
@@ -223,36 +427,43 @@ Sonexa AI is a comprehensive voice transcription SaaS platform that allows users
    ```bash
    git clone https://github.com/julianthant/sonexa-ai.git
    cd sonexa-ai
-   git checkout develop
    ```
 
 2. **Environment Configuration**
 
    ```bash
-   # Copy environment template
+   # Backend configuration
    cp backend/src/main/resources/application-dev.properties.template backend/src/main/resources/application-dev.properties
+
+   # Frontend configuration
+   cp frontend/.env.local.template frontend/.env.local
 
    # Edit with your configuration
    notepad backend/src/main/resources/application-dev.properties
+   notepad frontend/.env.local
    ```
 
 3. **Start Development Environment**
 
    ```bash
-   # Windows
+   # Windows - starts both frontend and backend
    ./dev.bat
 
    # This starts:
    # - PostgreSQL database (port 5432)
    # - Spring Boot application (port 8080)
+   # - Next.js frontend (port 3000)
    # - Redis for rate limiting (port 6379)
    ```
 
 4. **Verify Installation**
 
    ```bash
-   # Health check
+   # Backend health check
    curl http://localhost:8080/actuator/health
+
+   # Frontend access
+   http://localhost:3000
 
    # API documentation
    http://localhost:8080/swagger-ui.html
@@ -294,11 +505,34 @@ SPRING_MAIL_PASSWORD=your_app_password
 
 ### 🔐 Authentication Endpoints
 
-| Method | Endpoint             | Description       |
-| ------ | -------------------- | ----------------- |
-| `POST` | `/api/auth/register` | Register new user |
-| `POST` | `/api/auth/login`    | User login        |
-| `POST` | `/api/auth/refresh`  | Refresh JWT token |
+| Method | Endpoint                 | Description       |
+| ------ | ------------------------ | ----------------- |
+| `POST` | `/api/auth/register`     | Register new user |
+| `POST` | `/api/auth/authenticate` | User login        |
+| `GET`  | `/api/auth/profile`      | Get user profile  |
+
+### 🏢 Organization Endpoints
+
+| Method   | Endpoint                                   | Description                |
+| -------- | ------------------------------------------ | -------------------------- |
+| `POST`   | `/api/organizations`                       | Create new organization    |
+| `GET`    | `/api/organizations`                       | List user's organizations  |
+| `GET`    | `/api/organizations/{id}`                  | Get organization details   |
+| `PUT`    | `/api/organizations/{id}`                  | Update organization        |
+| `DELETE` | `/api/organizations/{id}`                  | Delete organization        |
+| `POST`   | `/api/organizations/{id}/invite`           | Generate invite code       |
+| `POST`   | `/api/organizations/join/{code}`           | Join organization via code |
+| `GET`    | `/api/organizations/{id}/members`          | List organization members  |
+| `DELETE` | `/api/organizations/{id}/members/{userId}` | Remove member              |
+
+### 🔐 Email Verification Endpoints
+
+| Method   | Endpoint                         | Description                 |
+| -------- | -------------------------------- | --------------------------- |
+| `POST`   | `/api/email-verification/send`   | Send verification code      |
+| `POST`   | `/api/email-verification/verify` | Verify 6-digit code         |
+| `GET`    | `/api/email-verification/status` | Check verification status   |
+| `DELETE` | `/api/email-verification/{id}`   | Cancel verification request |
 
 ### 🎵 Voice Processing Endpoints
 
@@ -424,6 +658,49 @@ CREATE TABLE user_subscriptions (
 );
 ```
 
+#### Organizations Table
+
+```sql
+CREATE TABLE organizations (
+    id UUID PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    invite_code VARCHAR(8) UNIQUE NOT NULL,
+    created_by_user_id UUID NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Organization Members Table
+
+```sql
+CREATE TABLE organization_members (
+    id UUID PRIMARY KEY,
+    organization_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(organization_id, user_id),
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
+);
+```
+
+#### Email Verifications Table
+
+```sql
+CREATE TABLE email_verifications (
+    id UUID PRIMARY KEY,
+    verification_code VARCHAR(6) NOT NULL,
+    sender_email VARCHAR(100) NOT NULL,
+    recipient_user_id UUID NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    verified_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
 ### 🔍 Key Indexes
 
 ```sql
@@ -433,6 +710,11 @@ CREATE INDEX idx_voice_files_status ON voice_files(transcription_status);
 CREATE INDEX idx_voice_files_uploaded_at ON voice_files(uploaded_at);
 CREATE INDEX idx_voice_files_fingerprint ON voice_files(audio_fingerprint);
 CREATE INDEX idx_subscriptions_user_email ON user_subscriptions(user_email);
+CREATE INDEX idx_organization_members_org_id ON organization_members(organization_id);
+CREATE INDEX idx_organization_members_user_id ON organization_members(user_id);
+CREATE INDEX idx_email_verifications_sender ON email_verifications(sender_email);
+CREATE INDEX idx_email_verifications_status ON email_verifications(status);
+CREATE INDEX idx_organizations_invite_code ON organizations(invite_code);
 ```
 
 ---
