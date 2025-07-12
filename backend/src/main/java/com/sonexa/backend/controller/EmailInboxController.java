@@ -14,7 +14,6 @@ import com.sonexa.backend.model.RecentActivity;
 import com.sonexa.backend.model.User;
 import com.sonexa.backend.model.VoiceMessage;
 import com.sonexa.backend.repository.RecentActivityRepository;
-import com.sonexa.backend.repository.UserRepository;
 import com.sonexa.backend.repository.VoiceMessageRepository;
 
 @RestController
@@ -23,9 +22,6 @@ public class EmailInboxController {
 
     @Autowired
     private VoiceMessageRepository voiceMessageRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private RecentActivityRepository recentActivityRepository;

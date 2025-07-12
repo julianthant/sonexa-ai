@@ -11,6 +11,7 @@ import com.sonexa.backend.dto.settings.*;
 import com.sonexa.backend.dto.ActivityLogResponse;
 import com.sonexa.backend.model.User;
 import com.sonexa.backend.model.ActivityType;
+import com.sonexa.backend.model.ActivityLog;
 import com.sonexa.backend.repository.UserRepository;
 import com.sonexa.backend.exception.BadRequestException;
 import com.sonexa.backend.exception.UnauthorizedException;
@@ -191,7 +192,8 @@ public class SettingsService {
     }
 
     public EmailIntegrationResponse updateEmailIntegration(User user, EmailIntegrationRequest request) {
-        String oauthUrl = initiateEmailIntegration(user, request);
+        // Initiate OAuth flow (URL would be returned to frontend in real implementation)
+        initiateEmailIntegration(user, request);
         // For now, return current settings - in real implementation this would be handled by OAuth callback
         return getEmailIntegration(user);
     }
@@ -201,16 +203,16 @@ public class SettingsService {
             throw new BadRequestException("Email integration is not enabled");
         }
         
-        emailService.sendNotificationEmail(user, "Test Email", "This is a test email from your Sonexa AI integration.");
+        emailService.sendSecurityAlert(user, "Test email from your Sonexa AI integration.");
         activityLogService.logActivity(user, ActivityType.SETTINGS_CHANGE, "Email integration test sent");
     }
 
     private String initiateEmailIntegration(User user, EmailIntegrationRequest request) {
         // Generate OAuth URL for the requested service
         if ("gmail".equals(request.getService())) {
-            return generateGmailOAuthUrl(user, request.getRedirectUri());
+            return generateGmailOAuthUrl(request.getRedirectUri());
         } else if ("outlook".equals(request.getService())) {
-            return generateOutlookOAuthUrl(user, request.getRedirectUri());
+            return generateOutlookOAuthUrl(request.getRedirectUri());
         } else {
             throw new BadRequestException("Unsupported email service: " + request.getService());
         }
@@ -218,19 +220,39 @@ public class SettingsService {
 
     // Payment Methods (delegate to PaymentService)
     public List<PaymentMethodResponse> getPaymentMethods(User user) {
-        return paymentService.getUserPaymentMethods(user);
+        List<com.sonexa.backend.model.PaymentMethod> methods = paymentService.getUserPaymentMethods(user.getId());
+        return methods.stream()
+                .map(pm -> new PaymentMethodResponse(
+                    Long.valueOf(pm.getId().toString().hashCode()), // Convert UUID to Long
+                    pm.getType(),
+                    pm.getLast4(),
+                    pm.getBrand(),
+                    pm.getExpiryMonth() + "/" + pm.getExpiryYear(),
+                    pm.isDefault(),
+                    pm.getCreatedAt()
+                ))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public PaymentMethodResponse addPaymentMethod(User user, PaymentMethodRequest request) {
-        return paymentService.createPaymentMethod(user, request);
+        com.sonexa.backend.model.PaymentMethod paymentMethod = paymentService.addPaymentMethod(user, request);
+        return new PaymentMethodResponse(
+            Long.valueOf(paymentMethod.getId().toString().hashCode()), // Convert UUID to Long
+            paymentMethod.getType(),
+            paymentMethod.getLast4(),
+            paymentMethod.getBrand(),
+            paymentMethod.getExpiryMonth() + "/" + paymentMethod.getExpiryYear(),
+            paymentMethod.isDefault(),
+            paymentMethod.getCreatedAt()
+        );
     }
 
     public void removePaymentMethod(User user, Long id) {
-        paymentService.deletePaymentMethod(user, id);
+        paymentService.removePaymentMethod(user, id.toString());
     }
 
     public void setDefaultPaymentMethod(User user, Long id) {
-        paymentService.setDefaultPaymentMethod(user, id);
+        paymentService.setDefaultPaymentMethod(user, id.toString());
     }
 
     // Two Factor Authentication
@@ -254,7 +276,7 @@ public class SettingsService {
         user.setTwoFactorSecret(secret);
         userRepository.save(user);
 
-        return new TwoFactorSetupResponse(qrCodeUrl, secret, String.join(",", backupCodes));
+        return new TwoFactorSetupResponse(qrCodeUrl, secret, backupCodes);
     }
 
     public void verifyTwoFactor(User user, TwoFactorVerifyRequest request) {
@@ -310,7 +332,28 @@ public class SettingsService {
     }
 
     public Page<ActivityLogResponse> getActivityLog(User user, int page, int size) {
-        return activityLogService.getUserActivityLog(user, PageRequest.of(page, size));
+        List<ActivityLog> activities = activityLogService.getUserActivities(user.getId());
+        
+        // Convert to ActivityLogResponse and handle pagination manually
+        List<ActivityLogResponse> responses = activities.stream()
+                .map(log -> new ActivityLogResponse(
+                    Long.valueOf(log.getId().toString().hashCode()), // Convert UUID to Long
+                    log.getType().toString(),
+                    log.getDescription(),
+                    log.getIpAddress(),
+                    log.getUserAgent(),
+                    log.getCreatedAt()
+                ))
+                .skip((long) page * size)
+                .limit(size)
+                .collect(java.util.stream.Collectors.toList());
+                
+        // Create a simple Page implementation
+        return new org.springframework.data.domain.PageImpl<>(
+            responses, 
+            PageRequest.of(page, size), 
+            activities.size()
+        );
     }
 
     public void deleteAccount(User user, AccountDeletionRequest request) {
@@ -337,13 +380,13 @@ public class SettingsService {
         userRepository.save(user);
     }
 
-    private String generateGmailOAuthUrl(User user, String redirectUri) {
+    private String generateGmailOAuthUrl(String redirectUri) {
         // Implementation for Gmail OAuth URL generation
         // This would use Google OAuth2 library
         return "https://accounts.google.com/oauth2/auth?client_id=CLIENT_ID&redirect_uri=" + redirectUri + "&scope=email";
     }
 
-    private String generateOutlookOAuthUrl(User user, String redirectUri) {
+    private String generateOutlookOAuthUrl(String redirectUri) {
         // Implementation for Outlook OAuth URL generation
         // This would use Microsoft Graph OAuth2 library
         return "https://login.microsoftonline.com/oauth2/v2.0/authorize?client_id=CLIENT_ID&redirect_uri=" + redirectUri + "&scope=mail.read";
