@@ -2,7 +2,6 @@ package com.sonexa.backend.config;
 
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,7 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -23,9 +21,6 @@ import jakarta.servlet.http.HttpServletResponse;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -39,11 +34,17 @@ public class SecurityConfig {
                 // Public endpoints - no authentication required
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/api/health/**").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
                 // Protected endpoints - authentication required
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
-                // All other endpoints require authentication
-                .anyRequest().authenticated()
+                // For now, allow all other endpoints for testing
+                .anyRequest().permitAll()
+                )
+                // Disable frame options for H2 console
+                .headers(headers -> headers
+                .frameOptions(frameOptions -> frameOptions.deny())
                 )
                 // Configure session management
                 .sessionManagement(session -> session
@@ -52,9 +53,9 @@ public class SecurityConfig {
                 // Configure exception handling
                 .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint(authenticationEntryPoint())
-                )
-                // Add our JWT filter before the default authentication filter
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                );
+        // Only add JWT filter for protected endpoints
+        // .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

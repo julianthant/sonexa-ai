@@ -1,17 +1,4 @@
 services:
-  postgres:
-    image: postgres:16
-    container_name: sonexa_db_dev
-    restart: always
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: sonexa_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespw
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   backend:
     build:
       context: ./backend
@@ -19,12 +6,7 @@ services:
         SPRING_PROFILES_ACTIVE: dev
     ports:
       - "8080:8080"
-    depends_on:
-      - postgres
     environment:
       SPRING_PROFILES_ACTIVE: dev
     env_file:
       - .env.dev
-
-volumes:
-  postgres_data:
