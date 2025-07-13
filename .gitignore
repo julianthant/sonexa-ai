@@ -317,3 +317,4 @@ migrations/
 
 # Temporary files
 frontend/src/app/page-new.tsx
+.bat
