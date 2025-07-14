@@ -1,0 +1,65 @@
+# Project-wide ignore patterns
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Digital Ocean
+.do/
+
+# Deployment
+/dist/
+/build/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+.tmp/
+temp/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Documentation build
+docs/_build/
+site/
+
+# Coverage reports
+coverage/
+.coverage
+
+# Database dumps
+*.sql
+*.db
+*.sqlite
+
+# Keys and certificates
+*.pem
+*.key
+*.crt
+*.p12
+
+# Local development
+/local/
+/dev-data/
