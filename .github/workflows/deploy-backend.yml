@@ -1,79 +1,71 @@
-name: Deploy Backend to DigitalOcean
+name: Build and deploy Sonexa Backend to DigitalOcean
+run-name: ${{ github.actor }} is deploying to production server 🚀
 
 on:
   push:
-    branches: [main, deploy]
-    paths:
-      - "backend/**"
-      - ".github/workflows/deploy-backend.yml"
-  pull_request:
-    branches: [main]
+    branches:
+      - main
     paths:
       - "backend/**"
       - ".github/workflows/deploy-backend.yml"
   workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write
-
-env:
-  REGISTRY: docker.io
-  IMAGE_NAME: sonexa-ai-backend
-
 jobs:
-  build-and-push:
+  build-and-publish:
+    name: build and publish image
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/deploy'
-    permissions:
-      contents: read
-      packages: write
-    defaults:
-      run:
-        working-directory: ./backend
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Docker Hub
+        run: |
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login docker.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Create .env file
+        run: |
+          cd backend
+          cat > .env << EOL
+          DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/sonexa-ai-backend
+          IMAGE_TAG=latest
+          DATABASE_NAME=${{ secrets.DATABASE_NAME }}
+          DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}
+          DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          SSL_ENABLED=${{ secrets.SSL_ENABLED || 'false' }}
+          EOL
+          echo "Environment file created"
+          # Show non-sensitive variables
+          grep -v "PASSWORD\|SECRET" .env || true
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      - name: Build and Publish
+        run: |
+          cd backend
+          docker compose -f docker-compose.prod.yml build --no-cache
+          docker compose -f docker-compose.prod.yml push
 
-  deploy:
-    needs: build-and-push
+  deployment:
+    needs: build-and-publish
+    name: deploy image
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/deploy'
-    permissions:
-      contents: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Deploy to DigitalOcean
+      - name: rsync docker compose config and files
+        uses: burnett01/rsync-deployments@5.2.1
+        with:
+          switches: -avzr --delete
+          path: backend/
+          remote_path: sonexa-ai
+          remote_host: ${{ secrets.DO_HOST }}
+          remote_user: ${{ secrets.DO_USERNAME }}
+          remote_key: ${{ secrets.DO_SSH_KEY }}
+
+      - name: connect and deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.DO_HOST }}
@@ -81,22 +73,18 @@ jobs:
           key: ${{ secrets.DO_SSH_KEY }}
           port: ${{ secrets.DO_PORT }}
           script: |
+            # Clean up old resources
+            docker system prune -a --volumes -f
+
+            # Create network if it doesn't exist
+            docker network create sonexa-network || true
+
             # Navigate to deployment directory
-            cd /opt/sonexa-ai
+            cd sonexa-ai
 
-            # Pull latest changes
-            git pull origin main
-
-            # Login to Docker Hub
-            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login docker.io -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-            # Pull latest image
-            docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-
-            # Create .env file with all environment variables
-            cd backend
+            # Create environment file
             cat > .env << EOL
-            DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
+            DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/sonexa-ai-backend
             IMAGE_TAG=latest
             DATABASE_NAME=${{ secrets.DATABASE_NAME }}
             DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}
@@ -105,37 +93,28 @@ jobs:
             GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
             CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
+            SSL_ENABLED=${{ secrets.SSL_ENABLED || 'false' }}
             EOL
 
-            # Stop and remove old containers
-            docker-compose -f docker-compose.prod.yml down || true
+            # Login to Docker Hub
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login docker.io --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-            # Start new containers using the .env file
-            docker-compose -f docker-compose.prod.yml --env-file .env up -d postgres backend
+            # Pull latest images
+            docker compose -f docker-compose.prod.yml pull
 
-            # Clean up old images
-            docker image prune -af
+            # Start services
+            docker compose -f docker-compose.prod.yml --env-file .env up -d
 
-            # Wait for services to be healthy
-            echo "Waiting for database to initialize..."
-            sleep 20
+            # Wait for services to be ready
+            echo "Waiting for services to start..."
+            sleep 30
 
-            # Check if postgres is ready
-            docker-compose -f docker-compose.prod.yml exec postgres pg_isready -U "$DATABASE_USERNAME" -d "$DATABASE_NAME" || echo "Database not ready yet"
+            # Check service status
+            docker ps
 
-            echo "Waiting for backend service to start..."
-            sleep 60
-
-            # Check if backend is running
-            docker ps | grep sonexa-backend || echo "Backend container not running"
-
-            # Check backend logs
-            docker-compose -f docker-compose.prod.yml logs backend | tail -20
-
-            # Verify deployment
-            echo "Checking backend health..."
-            for i in {1..5}; do
-              if curl -f http://localhost:8080/actuator/health; then
+            # Verify backend health
+            for i in {1..10}; do
+              if curl -s -f http://localhost:8080/actuator/health | grep -q "UP"; then
                 echo "Backend health check successful!"
                 echo "Deployment completed successfully!"
                 exit 0
@@ -145,6 +124,6 @@ jobs:
               fi
             done
 
-            echo "Backend health check failed after multiple attempts"
-            docker-compose -f docker-compose.prod.yml logs backend --tail 50
+            echo "Deployment verification failed"
+            docker compose -f docker-compose.prod.yml logs --tail 50
             exit 1
