@@ -73,16 +73,27 @@ jobs:
           key: ${{ secrets.DO_SSH_KEY }}
           port: ${{ secrets.DO_PORT }}
           script: |
-            # Clean up old resources
-            docker system prune -a --volumes -f
-
-            # Create network if it doesn't exist
-            docker network create sonexa-network || true
-
             # Navigate to deployment directory
             cd sonexa-ai
 
+            # Stop and remove existing containers to avoid conflicts
+            echo "Stopping existing containers..."
+            docker-compose -f docker-compose.prod.yml down --remove-orphans || true
+
+            # Remove any conflicting containers by name
+            echo "Removing conflicting containers..."
+            docker rm -f sonexa-postgres-prod sonexa-backend-prod sonexa-nginx-prod || true
+
+            # Clean up old resources (but preserve volumes to keep data)
+            echo "Cleaning up unused resources..."
+            docker system prune -f
+
+            # Create network if it doesn't exist
+            echo "Creating Docker network..."
+            docker network create sonexa-network || true
+
             # Create environment file
+            echo "Creating environment file..."
             cat > .env << EOL
             DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/sonexa-ai-backend
             IMAGE_TAG=latest
@@ -97,33 +108,81 @@ jobs:
             EOL
 
             # Login to Docker Hub
+            echo "Logging into Docker Hub..."
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login docker.io --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
             # Pull latest images
+            echo "Pulling latest images..."
             docker compose -f docker-compose.prod.yml pull
 
             # Start services
+            echo "Starting services..."
             docker compose -f docker-compose.prod.yml --env-file .env up -d
 
-            # Wait for services to be ready
-            echo "Waiting for services to start..."
-            sleep 30
+            # Wait for database to be ready first
+            echo "Waiting for database to be ready..."
+            for i in {1..30}; do
+              if docker exec sonexa-postgres-prod pg_isready -U "${{ secrets.DATABASE_USERNAME }}" -d "${{ secrets.DATABASE_NAME }}"; then
+                echo "Database is ready!"
+                break
+              else
+                echo "Database not ready yet, attempt $i/30..."
+                sleep 5
+              fi
+            done
+
+            # Wait additional time for backend to start
+            echo "Waiting for backend service to start..."
+            sleep 45
 
             # Check service status
-            docker ps
+            echo "Current container status:"
+            docker ps -a
 
-            # Verify backend health
-            for i in {1..10}; do
+            # Check backend logs before health check
+            echo "Backend logs (last 20 lines):"
+            docker compose -f docker-compose.prod.yml logs backend --tail 20
+
+            # Verify backend health with more detailed checks
+            echo "Starting health checks..."
+            for i in {1..15}; do
+              # First check if container is running
+              if ! docker ps | grep -q sonexa-backend-prod; then
+                echo "Backend container is not running, attempt $i/15"
+                sleep 10
+                continue
+              fi
+              
+              # Then check health endpoint
               if curl -s -f http://localhost:8080/actuator/health | grep -q "UP"; then
                 echo "Backend health check successful!"
                 echo "Deployment completed successfully!"
                 exit 0
               else
-                echo "Health check attempt $i failed, retrying in 10 seconds..."
+                echo "Health check attempt $i/15 failed, retrying in 10 seconds..."
                 sleep 10
               fi
             done
 
-            echo "Deployment verification failed"
-            docker compose -f docker-compose.prod.yml logs --tail 50
+            echo "Deployment verification failed after 15 attempts"
+            echo "=== DEBUGGING INFORMATION ==="
+
+            echo "Final container status:"
+            docker ps -a
+
+            echo "Network information:"
+            docker network ls
+
+            echo "Backend container logs (last 100 lines):"
+            docker compose -f docker-compose.prod.yml logs backend --tail 100
+
+            echo "Database container logs (last 50 lines):"
+            docker compose -f docker-compose.prod.yml logs postgres --tail 50
+
+            echo "Checking if backend port is accessible:"
+            netstat -tulpn | grep :8080 || echo "Port 8080 not listening"
+
+            echo "Environment variables in backend container:"
+            docker exec sonexa-backend-prod env | grep -E "(DATABASE|SPRING|GOOGLE|JWT|CORS)" || echo "Could not retrieve environment variables"
+
             exit 1

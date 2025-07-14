@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: sonexa-postgres
+    container_name: sonexa-postgres-prod
     restart: always
     environment:
       POSTGRES_INITDB_ARGS: "-c max_prepared_transactions=100"
@@ -23,10 +23,8 @@ services:
       retries: 3
 
   backend:
-    container_name: sonexa-backend
-    build:
-      context: .
-      dockerfile: Dockerfile
+    container_name: sonexa-backend-prod
+    image: ${DOCKER_IMAGE}:${IMAGE_TAG}
     restart: always
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -40,7 +38,6 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
       JWT_SECRET: ${JWT_SECRET}
       SSL_ENABLED: ${SSL_ENABLED:-false}
-    image: "ghcr.io/julianthant/sonexa-ai/sonexa-ai:latest"
     ports:
       - "8080:8080"
     depends_on:
