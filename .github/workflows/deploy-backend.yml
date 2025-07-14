@@ -10,12 +10,8 @@ on:
     paths:
       - "backend/**"
 
-permissions:
-  contents: read
-  packages: write
-
 env:
-  REGISTRY: docker.io
+  REGISTRY: ghcr.io
   IMAGE_NAME: sonexa-ai-backend
 
 jobs:
@@ -72,25 +68,23 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set package permissions
         run: |
           # Ensure the package can be created
           echo "Setting up package permissions..."
-
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -118,12 +112,10 @@ jobs:
           script: |
             # Navigate to deployment directory
             cd /opt/sonexa-ai
-
             # Pull latest changes
             git pull origin main
-
             # Set environment variables
-            export DOCKER_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            export DOCKER_IMAGE=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
             export IMAGE_TAG=main-${{ github.sha }}
             export DATABASE_NAME=${{ secrets.DB_NAME }}
             export DATABASE_USERNAME=${{ secrets.DB_USERNAME }}
@@ -132,26 +124,18 @@ jobs:
             export GOOGLE_CLIENT_SECRET=${{ secrets.OAUTH_CLIENT_SECRET }}
             export CORS_ALLOWED_ORIGINS=${{ secrets.APP_CORS_ORIGINS }}
             export JWT_SECRET=${{ secrets.APP_JWT_SECRET }}
-
-            # Login to Docker Hub
-            echo ${{ secrets.DOCKER_PASSWORD }} | docker login ${{ env.REGISTRY }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-
+            # Login to GitHub Container Registry
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
             # Pull latest image
             docker pull $DOCKER_IMAGE:$IMAGE_TAG
-
             # Stop and remove old containers
             docker-compose -f backend/docker-compose.prod.yml down
-
             # Start new containers
             docker-compose -f backend/docker-compose.prod.yml up -d
-
             # Clean up old images
             docker image prune -af
-
             # Wait for services to be healthy
             sleep 30
-
             # Verify deployment
             curl -f http://localhost:8080/actuator/health || exit 1
-
             echo "Deployment completed successfully!"
