@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
 import { AuthHydration } from "@/components/auth/AuthHydration";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -55,6 +56,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <Providers>
           <AuthHydration>{children}</AuthHydration>
+          <Toaster position="top-right" richColors theme="dark" />
         </Providers>
       </body>
     </html>

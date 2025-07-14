@@ -34,14 +34,16 @@ export function RegisterForm() {
 
     try {
       const response = await apiService.register(
-        data.username,
+        data.firstName,
+        data.lastName,
         data.email,
-        data.password
+        data.password,
+        data.company
       );
 
       if (response.success && response.data) {
         setAuth(response.data.token, response.data.user);
-        toast.success(`Welcome to Sonexa AI, ${response.data.user.username}!`);
+        toast.success(`Welcome to Sonexa AI, ${response.data.user.firstName}!`);
         router.push("/dashboard");
       } else {
         toast.error(response.error?.message || "Registration failed");
@@ -173,39 +175,66 @@ export function RegisterForm() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label
-              htmlFor="username"
-              className="block mb-2 font-medium text-gray-700 text-sm"
-            >
-              Username
-            </label>
-            <input
-              {...register("username", {
-                required: "Username is required",
-                minLength: {
-                  value: 3,
-                  message: "Username must be at least 3 characters",
-                },
-                pattern: {
-                  value: /^[a-zA-Z0-9_]+$/,
-                  message:
-                    "Username can only contain letters, numbers, and underscores",
-                },
-              })}
-              type="text"
-              className="input-field"
-              placeholder="Choose a username"
-            />
-            {errors.username && (
-              <motion.p
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-1 text-red-600 text-sm"
+          <div className="gap-4 grid grid-cols-2">
+            <div>
+              <label
+                htmlFor="firstName"
+                className="block mb-2 font-medium text-gray-700 text-sm"
               >
-                {errors.username.message}
-              </motion.p>
-            )}
+                First Name
+              </label>
+              <input
+                {...register("firstName", {
+                  required: "First name is required",
+                  minLength: {
+                    value: 2,
+                    message: "First name must be at least 2 characters",
+                  },
+                })}
+                type="text"
+                className="input-field"
+                placeholder="Enter your first name"
+              />
+              {errors.firstName && (
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-1 text-red-600 text-sm"
+                >
+                  {errors.firstName.message}
+                </motion.p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="lastName"
+                className="block mb-2 font-medium text-gray-700 text-sm"
+              >
+                Last Name
+              </label>
+              <input
+                {...register("lastName", {
+                  required: "Last name is required",
+                  minLength: {
+                    value: 2,
+                    message: "Last name must be at least 2 characters",
+                  },
+                })}
+                type="text"
+                className="input-field"
+                placeholder="Enter your last name"
+              />
+              {errors.lastName && (
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-1 text-red-600 text-sm"
+                >
+                  {errors.lastName.message}
+                </motion.p>
+              )}
+            </div>
           </div>
 
           <div>
@@ -236,6 +265,21 @@ export function RegisterForm() {
                 {errors.email.message}
               </motion.p>
             )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="company"
+              className="block mb-2 font-medium text-gray-700 text-sm"
+            >
+              Company <span className="text-gray-500">(optional)</span>
+            </label>
+            <input
+              {...register("company")}
+              type="text"
+              className="input-field"
+              placeholder="Enter your company name"
+            />
           </div>
 
           <div>

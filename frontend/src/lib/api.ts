@@ -13,8 +13,8 @@ export interface ApiResponse<T> {
 
 export const API_BASE_URL =
   typeof window !== "undefined"
-    ? process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api"
-    : "http://localhost:8080/api";
+    ? process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
+    : "http://localhost:8080";
 
 class ApiService {
   private async request<T>(
@@ -22,7 +22,7 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
-      const url = `${API_BASE_URL}${endpoint}`;
+      const url = `${API_BASE_URL}/api${endpoint}`;
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("auth_token")
@@ -80,13 +80,15 @@ class ApiService {
   }
 
   async register(
-    username: string,
+    firstName: string,
+    lastName: string,
     email: string,
-    password: string
+    password: string,
+    company?: string
   ): Promise<ApiResponse<{ token: string; user: AuthUser }>> {
     return this.request("/auth/register", {
       method: "POST",
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ firstName, lastName, email, password, company }),
     });
   }
 

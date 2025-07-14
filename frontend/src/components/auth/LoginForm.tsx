@@ -31,7 +31,11 @@ export function LoginForm() {
 
       if (response.success && response.data) {
         setAuth(response.data.token, response.data.user);
-        toast.success(`Welcome back, ${response.data.user.username}!`);
+        toast.success(
+          `Welcome back, ${
+            response.data.user.firstName || response.data.user.email
+          }!`
+        );
         router.push("/dashboard");
       } else {
         toast.error(response.error?.message || "Login failed");

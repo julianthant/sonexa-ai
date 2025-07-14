@@ -51,7 +51,7 @@ export function AppSidebar() {
     },
     {
       id: "voice-messages",
-      name: "Messages",
+      name: "Voice Messages",
       icon: MessageSquare,
       color: "bg-purple-500",
       count: 23,
@@ -59,7 +59,7 @@ export function AppSidebar() {
     },
     {
       id: "upload",
-      name: "Upload",
+      name: "Upload Voice",
       icon: Upload,
       color: "bg-orange-500",
       href: "/dashboard/upload",
