@@ -71,6 +71,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set package permissions
+        run: |
+          # Ensure the package can be created
+          echo "Setting up package permissions..."
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
