@@ -1,3 +1,10 @@
+# Project-wide ignore patterns
+
+# Environment files
+.env
+.env.*
+!.env.example
+
 # Docker
 .docker/
 docker-compose.override.yml
