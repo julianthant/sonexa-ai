@@ -5,10 +5,13 @@ on:
     branches: [main, deploy]
     paths:
       - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
   pull_request:
     branches: [main]
     paths:
       - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -60,6 +63,9 @@ jobs:
     # needs: test  # Temporarily disabled
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/deploy'
+    permissions:
+      contents: read
+      packages: write
     defaults:
       run:
         working-directory: ./backend
@@ -75,16 +81,11 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Set package permissions
-        run: |
-          # Ensure the package can be created
-          echo "Setting up package permissions..."
-
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -103,6 +104,8 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/deploy'
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -123,7 +126,7 @@ jobs:
             git pull origin main
 
             # Set environment variables
-            export DOCKER_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            export DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
             export IMAGE_TAG=main-${{ github.sha }}
             export DATABASE_NAME=${{ secrets.DB_NAME }}
             export DATABASE_USERNAME=${{ secrets.DB_USERNAME }}
