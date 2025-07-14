@@ -102,18 +102,18 @@ jobs:
 
             # Create environment file
             echo "Creating environment file..."
-            cat > .env << EOL
-            DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/sonexa-ai-backend
-            IMAGE_TAG=latest
-            DATABASE_NAME=${{ secrets.DATABASE_NAME }}
-            DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}
-            DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
-            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-            CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            SSL_ENABLED=${{ secrets.SSL_ENABLED || 'false' }}
-            EOL
+            cat > .env << 'EOL'
+DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/sonexa-ai-backend
+IMAGE_TAG=latest
+DATABASE_NAME=${{ secrets.DATABASE_NAME }}
+DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}
+DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
+JWT_SECRET=${{ secrets.JWT_SECRET }}
+SSL_ENABLED=${{ secrets.SSL_ENABLED || 'false' }}
+EOL
 
             # Verify environment file was created correctly
             echo "Environment file contents (non-sensitive):"
@@ -121,7 +121,7 @@ jobs:
 
             # Test environment variable loading
             echo "Testing environment variable loading..."
-            source .env
+            set -a && source .env && set +a
             echo "DATABASE_NAME loaded as: $DATABASE_NAME"
             echo "DATABASE_USERNAME loaded as: $DATABASE_USERNAME"
             echo "DOCKER_IMAGE loaded as: $DOCKER_IMAGE"
@@ -168,7 +168,7 @@ jobs:
             database_ready=false
 
             # Source the environment variables for the health check
-            source .env
+            set -a && source .env && set +a
 
             for i in {1..60}; do
               # First check if postgres container is running
@@ -180,7 +180,7 @@ jobs:
                 continue
               fi
               
-              # Check if container is healthy using docker exec with explicit credentials
+              # Check if container is healthy using pg_isready with the actual username
               if docker exec sonexa-postgres-prod pg_isready -U "$DATABASE_USERNAME" -d "$DATABASE_NAME"; then
                 echo "Database is ready!"
                 database_ready=true
