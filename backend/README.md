@@ -103,3 +103,4 @@ docker build -t sonexa-ai-backend .
 - Health checks at `/actuator/health`
 - Metrics available at `/actuator/metrics`
 - Application info at `/actuator/info`
+"# Trigger CI/CD pipeline" 
