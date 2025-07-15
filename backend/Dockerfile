@@ -1,5 +1,5 @@
 # Multi-stage build for Spring Boot application
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM maven:3.9-eclipse-temurin-17-alpine AS build
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ COPY src src
 RUN mvn clean package -DskipTests
 
 # Development stage
-FROM eclipse-temurin:17-jdk-alpine AS development
+FROM maven:3.9-eclipse-temurin-17-alpine AS development
 
 WORKDIR /app
 
