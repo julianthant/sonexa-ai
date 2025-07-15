@@ -3,7 +3,7 @@ name: Deploy Production Backend to Digital Ocean
 on:
   push:
     branches: [main]
-    paths: ["backend/**"]
+    paths: ["backend/**", ".github/workflows/deploy-backend-production.yaml"]
 
 jobs:
   deploy:
