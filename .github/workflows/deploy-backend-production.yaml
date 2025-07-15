@@ -44,6 +44,7 @@ jobs:
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
+            sudo systemctl stop sonexa-backend || true
             docker pull julianzaw/sonexa-ai-backend-production:latest
             docker stop sonexa-backend || true
             docker rm sonexa-backend || true
