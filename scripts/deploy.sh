@@ -3,20 +3,32 @@
 # Deployment script for Sonexa AI
 echo "🚀 Starting Sonexa AI deployment..."
 
-# Check if environment variables are set
-if [ -z "$DATABASE_PASSWORD" ]; then
-    echo "❌ Error: DATABASE_PASSWORD environment variable is not set"
-    echo "Please set the required environment variables:"
-    echo "export DO_DB_HOST='your-db-host'"
-    echo "export DO_DB_PORT='25060'"
-    echo "export DATABASE_NAME='your-db-name'"
-    echo "export DATABASE_USERNAME='your-db-username'"
-    echo "export DATABASE_PASSWORD='your-db-password'"
-    echo "export KEYCLOAK_DATABASE_NAME='keycloak_db'"
-    echo "export KEYCLOAK_DATABASE_USERNAME='your-keycloak-db-username'"
-    echo "export KEYCLOAK_DATABASE_PASSWORD='your-keycloak-db-password'"
-    echo "export KEYCLOAK_ADMIN_PASSWORD='admin123'"
-    echo "export SSL_EMAIL='admin@sonexa.ai'"
+# Check if running in GitHub Actions or local environment
+if [ "$GITHUB_ACTIONS" = "true" ]; then
+    echo "✅ Running in GitHub Actions - using secrets"
+    # Environment variables are already set by GitHub Actions
+elif [ -f ".env.local" ]; then
+    echo "✅ Loading local environment variables"
+    source .env.local
+elif [ -z "$DATABASE_PASSWORD" ]; then
+    echo "❌ Error: No environment variables found"
+    echo ""
+    echo "For GitHub Actions deployment:"
+    echo "  → Environment variables are automatically loaded from secrets"
+    echo ""
+    echo "For local deployment, create .env.local with:"
+    echo "  export DO_DB_HOST='your-db-host'"
+    echo "  export DO_DB_PORT='25060'"
+    echo "  export DATABASE_NAME='your-db-name'"
+    echo "  export DATABASE_USERNAME='your-db-username'"
+    echo "  export DATABASE_PASSWORD='your-db-password'"
+    echo "  export KEYCLOAK_DATABASE_NAME='keycloak_db'"
+    echo "  export KEYCLOAK_DATABASE_USERNAME='your-keycloak-db-username'"
+    echo "  export KEYCLOAK_DATABASE_PASSWORD='your-keycloak-db-password'"
+    echo "  export KEYCLOAK_ADMIN_PASSWORD='admin123'"
+    echo "  export SSL_EMAIL='admin@sonexa.ai'"
+    echo ""
+    echo "Then run: source .env.local && bash scripts/deploy.sh"
     exit 1
 fi
 

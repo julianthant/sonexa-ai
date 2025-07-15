@@ -63,6 +63,8 @@ coverage/
 # Sensitive files
 **/secrets.txt
 **/credentials.txt
+**/.env.local
+**/env.local
 GITHUB_SECRETS_CHECKLIST.md
 KEYCLOAK_SETUP_GUIDE.md
 

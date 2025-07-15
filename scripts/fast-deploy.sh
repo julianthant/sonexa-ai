@@ -11,11 +11,21 @@ export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
 export BUILDKIT_PROGRESS=plain
 
-# Check if environment variables are set
-if [ -z "$DATABASE_PASSWORD" ]; then
-    echo "❌ Error: DATABASE_PASSWORD environment variable is not set"
-    echo "Please set the required environment variables first:"
-    echo "source scripts/set-env.sh"
+# Check if running in GitHub Actions or local environment
+if [ "$GITHUB_ACTIONS" = "true" ]; then
+    echo "✅ Running in GitHub Actions - using secrets"
+    # Environment variables are already set by GitHub Actions
+elif [ -f ".env.local" ]; then
+    echo "✅ Loading local environment variables"
+    source .env.local
+elif [ -z "$DATABASE_PASSWORD" ]; then
+    echo "❌ Error: No environment variables found"
+    echo ""
+    echo "For GitHub Actions deployment:"
+    echo "  → Push to main branch to trigger automatic deployment"
+    echo ""
+    echo "For local deployment, create .env.local with your credentials"
+    echo "  → Copy from scripts/set-env.sh template"
     exit 1
 fi
 

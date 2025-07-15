@@ -21,6 +21,21 @@ jobs:
           host: ${{ secrets.DROPLET_IP }}
           username: root
           key: ${{ secrets.DROPLET_SSH_KEY }}
+          envs: DO_DB_HOST,DO_DB_PORT,DATABASE_NAME,DATABASE_USERNAME,DATABASE_PASSWORD,KEYCLOAK_DATABASE_NAME,KEYCLOAK_DATABASE_USERNAME,KEYCLOAK_DATABASE_PASSWORD,KEYCLOAK_ADMIN_PASSWORD,SSL_EMAIL,KEYCLOAK_CLIENT_ID,KEYCLOAK_CLIENT_SECRET,CORS_ALLOWED_ORIGINS
+        env:
+          DO_DB_HOST: ${{ secrets.KEYCLOAK_DB_HOST }}
+          DO_DB_PORT: ${{ secrets.KEYCLOAK_DB_PORT }}
+          DATABASE_NAME: ${{ secrets.DB_NAME }}
+          DATABASE_USERNAME: ${{ secrets.DB_USERNAME }}
+          DATABASE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          KEYCLOAK_DATABASE_NAME: ${{ secrets.KEYCLOAK_DB_NAME }}
+          KEYCLOAK_DATABASE_USERNAME: ${{ secrets.DB_USERNAME }}
+          KEYCLOAK_DATABASE_PASSWORD: ${{ secrets.KEYCLOAK_DB_PASSWORD }}
+          KEYCLOAK_ADMIN_PASSWORD: ${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
+          SSL_EMAIL: ${{ secrets.SSL_EMAIL }}
+          KEYCLOAK_CLIENT_ID: ${{ secrets.KEYCLOAK_CLIENT_ID }}
+          KEYCLOAK_CLIENT_SECRET: ${{ secrets.KEYCLOAK_CLIENT_SECRET }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
           script: |
             # Navigate to app directory
             cd /opt/sonexa-ai || { echo "App directory not found"; exit 1; }
@@ -28,86 +43,8 @@ jobs:
             # Pull latest code
             git pull origin main
 
-            # Create backend application properties
-            cat << EOF > backend/src/main/resources/application-prod.properties
-            spring.datasource.url=jdbc:postgresql://${{ secrets.DB_NAME }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}?sslmode=require
-            spring.datasource.username=${{ secrets.DB_USERNAME }}
-            spring.datasource.password=${{ secrets.DB_PASSWORD }}
-            spring.jpa.hibernate.ddl-auto=update
-            spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+            # Export GitHub Actions flag for deployment script
+            export GITHUB_ACTIONS=true
 
-            keycloak.auth-server-url=https://auth.sonexa-ai.vercel.app
-            keycloak.realm=sonexa
-            keycloak.resource=${{ secrets.KEYCLOAK_CLIENT_ID }}
-            keycloak.credentials.secret=${{ secrets.KEYCLOAK_CLIENT_SECRET }}
-
-            cors.allowed-origins=${{ secrets.CORS_ALLOWED_ORIGINS }}
-
-            # Production optimizations
-            spring.jpa.show-sql=false
-            logging.level.org.hibernate.SQL=WARN
-
-            # Database connection pool settings
-            spring.datasource.hikari.maximum-pool-size=20
-            spring.datasource.hikari.minimum-idle=5
-            spring.datasource.hikari.connection-timeout=20000
-            EOF
-
-            # Create frontend environment file
-            cat << EOF > frontend/.env.production
-            NEXT_PUBLIC_API_URL=https://api.sonexa-ai.vercel.app
-            NEXT_PUBLIC_KEYCLOAK_URL=https://auth.sonexa-ai.vercel.app
-            NEXT_PUBLIC_KEYCLOAK_REALM=sonexa
-            NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${{ secrets.KEYCLOAK_CLIENT_ID }}
-            EOF
-
-            # Create production environment file
-            cat << EOF > .env.prod
-            # Database Configuration (External DigitalOcean Database)
-            DB_HOST=${{ secrets.DB_NAME }}
-            DB_PORT=${{ secrets.DB_PORT }}
-            DB_NAME=${{ secrets.DB_NAME }}
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-
-            # Keycloak Configuration
-            KEYCLOAK_ADMIN=${{ secrets.KEYCLOAK_ADMIN_USERNAME }}
-            KEYCLOAK_ADMIN_PASSWORD=${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
-            KEYCLOAK_DB_HOST=${{ secrets.DB_NAME }}
-            KEYCLOAK_DB_PORT=${{ secrets.DB_PORT }}
-            KEYCLOAK_DB_NAME=${{ secrets.KEYCLOAK_DB_NAME }}
-            KEYCLOAK_DB_USERNAME=${{ secrets.KEYCLOAK_DB_USERNAME }}
-            KEYCLOAK_DB_PASSWORD=${{ secrets.KEYCLOAK_DB_PASSWORD }}
-
-            # API URLs
-            API_URL=https://sonexa-ai.vercel.app
-            FRONTEND_URL=https://sonexa-ai.vercel.app
-            KEYCLOAK_URL=https://auth.sonexa-ai.vercel.app
-
-            # SSL Configuration
-            SSL_EMAIL=${{ secrets.SSL_EMAIL }}
-            EOF
-
-            # Stop existing containers
-            docker-compose -f docker-compose.prod.yml down || true
-
-            # Remove old images to save space
-            docker image prune -f
-
-            # Build and start services
-            docker-compose -f docker-compose.prod.yml up -d --build
-
-            # Wait for services to be healthy
-            echo "Waiting for services to start..."
-            sleep 30
-
-            # Check service status
-            docker-compose -f docker-compose.prod.yml ps
-
-            # Test endpoints
-            echo "Testing endpoints..."
-            curl -f http://localhost:3000 || echo "Frontend health check failed"
-            curl -f http://localhost:8080/actuator/health || echo "Backend health check failed"
-            curl -f http://localhost:8080/auth/realms/sonexa || echo "Keycloak health check failed"
-
-            echo "Deployment completed successfully!"
+            # Run the optimized fast deployment script
+            bash scripts/fast-deploy.sh
