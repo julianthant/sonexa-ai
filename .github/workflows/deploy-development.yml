@@ -1,0 +1,113 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches:
+      - develop
+      - feature/*
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Development Droplet
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEV_DROPLET_IP }}
+          username: root
+          key: ${{ secrets.DEV_DROPLET_SSH_KEY }}
+          script: |
+            # Navigate to app directory
+            cd /opt/sonexa-ai-dev || { echo "App directory not found"; exit 1; }
+
+            # Pull latest code
+            git pull origin develop
+
+            # Create backend application properties
+            cat << EOF > backend/src/main/resources/application-dev.properties
+            spring.datasource.url=jdbc:postgresql://${{ secrets.DEV_DB_HOST }}:${{ secrets.DEV_DB_PORT }}/${{ secrets.DEV_DB_NAME }}?sslmode=require
+            spring.datasource.username=${{ secrets.DEV_DB_USERNAME }}
+            spring.datasource.password=${{ secrets.DEV_DB_PASSWORD }}
+            spring.jpa.hibernate.ddl-auto=update
+            spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+            keycloak.auth-server-url=https://dev-auth.sonexa-ai.vercel.app
+            keycloak.realm=sonexa-dev
+            keycloak.resource=${{ secrets.DEV_KEYCLOAK_CLIENT_ID }}
+            keycloak.credentials.secret=${{ secrets.DEV_KEYCLOAK_CLIENT_SECRET }}
+
+            cors.allowed-origins=${{ secrets.DEV_CORS_ALLOWED_ORIGINS }}
+
+            # Development settings
+            spring.jpa.show-sql=true
+            logging.level.org.hibernate.SQL=DEBUG
+            logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+            EOF
+
+            # Create frontend environment file
+            cat << EOF > frontend/.env.development
+            NEXT_PUBLIC_API_URL=https://dev-api.sonexa-ai.vercel.app
+            NEXT_PUBLIC_KEYCLOAK_URL=https://dev-auth.sonexa-ai.vercel.app
+            NEXT_PUBLIC_KEYCLOAK_REALM=sonexa-dev
+            NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${{ secrets.DEV_KEYCLOAK_CLIENT_ID }}
+            EOF
+
+            # Create development environment file
+            cat << EOF > .env.dev
+            # Database Configuration (External DigitalOcean Database)
+            DB_HOST=${{ secrets.DEV_DB_HOST }}
+            DB_PORT=${{ secrets.DEV_DB_PORT }}
+            DB_NAME=${{ secrets.DEV_DB_NAME }}
+            DB_USERNAME=${{ secrets.DEV_DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DEV_DB_PASSWORD }}
+
+            # Keycloak Configuration
+            KEYCLOAK_ADMIN=${{ secrets.DEV_KEYCLOAK_ADMIN_USERNAME }}
+            KEYCLOAK_ADMIN_PASSWORD=${{ secrets.DEV_KEYCLOAK_ADMIN_PASSWORD }}
+            KEYCLOAK_DB_HOST=${{ secrets.DEV_DB_HOST }}
+            KEYCLOAK_DB_PORT=${{ secrets.DEV_DB_PORT }}
+            KEYCLOAK_DB_NAME=${{ secrets.DEV_KEYCLOAK_DB_NAME }}
+            KEYCLOAK_DB_USERNAME=${{ secrets.DEV_KEYCLOAK_DB_USERNAME }}
+            KEYCLOAK_DB_PASSWORD=${{ secrets.DEV_KEYCLOAK_DB_PASSWORD }}
+
+            # API URLs
+            API_URL=https://dev-api.sonexa-ai.vercel.app
+            FRONTEND_URL=https://dev.sonexa-ai.vercel.app
+            KEYCLOAK_URL=https://dev-auth.sonexa-ai.vercel.app
+
+            # SSL Configuration
+            SSL_EMAIL=${{ secrets.SSL_EMAIL }}
+            EOF
+
+            # Stop existing containers
+            docker-compose -f docker-compose.dev.yml down || true
+
+            # Remove old images to save space
+            docker image prune -f
+
+            # Build and start services
+            docker-compose -f docker-compose.dev.yml up -d --build
+
+            # Wait for services to be healthy
+            echo "Waiting for services to start..."
+            sleep 30
+
+            # Check service status
+            docker-compose -f docker-compose.dev.yml ps
+
+            # Test endpoints
+            echo "Testing endpoints..."
+            curl -f http://localhost:3001 || echo "Frontend health check failed"
+            curl -f http://localhost:8081/actuator/health || echo "Backend health check failed"
+            curl -f http://localhost:8081/auth/realms/sonexa-dev || echo "Keycloak health check failed"
+
+            echo "Development deployment completed successfully!"

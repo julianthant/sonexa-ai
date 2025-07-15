@@ -1,0 +1,77 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${API_URL}
+      - NEXT_PUBLIC_KEYCLOAK_URL=${KEYCLOAK_URL}
+      - NEXT_PUBLIC_KEYCLOAK_REALM=sonexa
+      - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+    restart: always
+    depends_on:
+      - backend
+      - keycloak
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - KEYCLOAK_AUTH_SERVER_URL=${KEYCLOAK_URL}
+      - KEYCLOAK_REALM=sonexa
+      - KEYCLOAK_RESOURCE=${KEYCLOAK_CLIENT_ID}
+      - KEYCLOAK_CREDENTIALS_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+    volumes:
+      - ./logs:/app/logs
+    restart: always
+    depends_on:
+      - keycloak
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    command: start
+    environment:
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://${KEYCLOAK_DB_HOST}:${KEYCLOAK_DB_PORT}/${KEYCLOAK_DB_NAME}?sslmode=require
+      - KC_DB_USERNAME=${KEYCLOAK_DB_USERNAME}
+      - KC_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD}
+      - KC_HOSTNAME=auth.sonexa-ai.vercel.app
+      - KC_HOSTNAME_PORT=443
+      - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/cert/fullchain.pem
+      - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/cert/privkey.pem
+      - KC_PROXY=edge
+    volumes:
+      - ./ssl/auth:/opt/keycloak/conf/cert:ro
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+      - keycloak
+    restart: always

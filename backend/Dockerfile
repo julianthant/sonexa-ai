@@ -1,52 +1,49 @@
-# Multi-stage build for Spring Boot application
-FROM eclipse-temurin:17-jdk-alpine AS build
+# Base stage
+FROM maven:3.9-eclipse-temurin-17-alpine AS base
 
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml first for better layer caching
-COPY mvnw .
-COPY mvnw.cmd .
-COPY .mvn .mvn
+# Copy pom.xml and download dependencies
 COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Make Maven wrapper executable
-RUN chmod +x ./mvnw
-
-# Download dependencies
-RUN ./mvnw dependency:go-offline -B
+# Development stage
+FROM base AS development
 
 # Copy source code
-COPY src src
-
-# Build the application
-RUN ./mvnw clean package -DskipTests
-
-# Production stage
-FROM eclipse-temurin:17-jre-alpine
-
-# Install curl for health checks
-RUN apk add --no-cache curl
-
-# Create app user
-RUN addgroup -S spring && adduser -S spring -G spring
-
-WORKDIR /app
-
-# Copy the jar file from build stage
-COPY --from=build /app/target/*.jar app.jar
-
-# Change ownership
-RUN chown spring:spring app.jar
-
-# Switch to app user
-USER spring
+COPY src ./src
 
 # Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
+# Start in development mode with hot reload
+CMD ["mvn", "spring-boot:run", "-Pdev"]
 
-# Run the application
+# Build stage
+FROM base AS builder
+
+# Copy source code
+COPY src ./src
+
+# Build the application
+RUN mvn clean package -DskipTests
+
+# Production stage
+FROM eclipse-temurin:17-jre-alpine AS production
+
+WORKDIR /app
+
+# Copy JAR from builder stage
+COPY --from=builder /app/target/*.jar app.jar
+
+# Create volume for logs
+VOLUME /app/logs
+
+# Expose port
+EXPOSE 8080
+
+# Start the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Default target
+FROM production 

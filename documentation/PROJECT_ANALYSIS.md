@@ -15,6 +15,7 @@ Sonexa AI is positioned to become a **voice message monitoring SaaS** that proce
 ## 🏗️ Current Architecture Overview
 
 ### **Backend Stack (Spring Boot)**
+
 - **Framework:** Spring Boot 3.3.13 with Java 17
 - **Database:** PostgreSQL with JPA/Hibernate
 - **Authentication:** JWT + OAuth2 (GitHub, Google, Microsoft)
@@ -24,6 +25,7 @@ Sonexa AI is positioned to become a **voice message monitoring SaaS** that proce
 - **Email:** Resend SMTP for notifications
 
 ### **Frontend Stack (Next.js)**
+
 - **Framework:** Next.js 14 with TypeScript
 - **Styling:** Tailwind CSS
 - **State Management:** Zustand (auth store)
@@ -35,6 +37,7 @@ Sonexa AI is positioned to become a **voice message monitoring SaaS** that proce
 ## 🎯 Current Implemented Features
 
 ### ✅ **Authentication & User Management**
+
 - Complete user registration/login system
 - OAuth2 integration (GitHub, Google, Microsoft)
 - JWT token management
@@ -42,6 +45,7 @@ Sonexa AI is positioned to become a **voice message monitoring SaaS** that proce
 - Password reset functionality
 
 ### ✅ **Subscription & Billing**
+
 - Stripe payment integration
 - 4-tier subscription system (FREE, BASIC, PREMIUM, ENTERPRISE)
 - Usage tracking and limits
@@ -49,6 +53,7 @@ Sonexa AI is positioned to become a **voice message monitoring SaaS** that proce
 - Subscription analytics dashboard
 
 ### ✅ **AI Processing Infrastructure**
+
 - Azure Speech Services integration
 - Azure AI + OpenAI services
 - Tier-based AI routing (free users get Azure, paid get OpenAI)
@@ -56,6 +61,7 @@ Sonexa AI is positioned to become a **voice message monitoring SaaS** that proce
 - Text analysis and sentiment detection
 
 ### ✅ **Team & Organization Management**
+
 - Multi-user organizations
 - Team collaboration features
 - Voice message sharing
@@ -63,6 +69,7 @@ Sonexa AI is positioned to become a **voice message monitoring SaaS** that proce
 - Activity logging
 
 ### ✅ **Frontend Dashboard**
+
 - Modern, responsive UI
 - Voice message management interface
 - Analytics and reporting
@@ -74,32 +81,39 @@ Sonexa AI is positioned to become a **voice message monitoring SaaS** that proce
 ## 🚨 Critical Missing Components
 
 ### **1. Email-to-Voice Pipeline (CORE FEATURE)**
+
 **Current State:** Placeholder implementation exists
 **What's Missing:**
+
 - Real email webhook/API integration
 - Email parsing for voice attachments
 - Audio file extraction and validation
 - Email-to-user mapping system
 
 **✅ ANSWERED:**
+
 1. **Email Method:** Companies will forward existing voicemails (not direct attachments)
 2. **Email Strategy:** Need to design subdomain system for `sonexa.tech` domain
 3. **Email Providers:** Standard business email forwarding (Gmail, Outlook, etc.)
 
 **📋 IMPLEMENTATION PLAN:**
+
 - **Domain Strategy:** Use `voice.sonexa.tech` with company identifiers: `companyname@voice.sonexa.tech`
 - **Email Processing:** Parse forwarded emails to extract original voice attachments
 - **Setup Process:** Simple email forwarding configuration for companies
 
 ### **2. Voice Message Processing Workflow**
+
 **Current State:** Basic VoiceMessage and VoiceFile models exist
 **What's Missing:**
+
 - Automated voice-to-text transcription pipeline
 - AI analysis and decision making (approve/reject/quarantine)
 - Response automation
 - Notification system for processed messages
 
 **✅ ANSWERED:**
+
 1. **Auto-Approval:** Voice messages with clear speech and recognizable content
 2. **Flag for Review:** Voice messages where AI cannot detect/understand speech clearly
 3. **Auto-Rejection:** Complete gibberish, non-speech audio, or corrupted files
@@ -107,35 +121,42 @@ Sonexa AI is positioned to become a **voice message monitoring SaaS** that proce
 5. **Human Role:** Work with AI-processed and categorized voice messages
 
 **📋 IMPLEMENTATION PLAN:**
+
 - **AI Pipeline:** Speech Recognition → Confidence Scoring → Content Analysis → Categorization
-- **Decision Logic:** 
+- **Decision Logic:**
   - Confidence > 80% + Coherent Content = APPROVED
-  - Confidence 50-80% OR Unclear Content = FLAGGED_FOR_REVIEW  
+  - Confidence 50-80% OR Unclear Content = FLAGGED_FOR_REVIEW
   - Confidence < 50% OR No Speech Detected = REJECTED
 - **Categories:** Urgent, General, Sales Inquiry, Complaint, Information Request
 
 ### **3. Email Monitoring Dashboard**
+
 **Current State:** Generic voice message views exist
 **What's Missing:**
+
 - Real-time email monitoring interface
 - Company-specific email tracking
 - Message status visualization (pending, processed, responded)
 - Bulk operations for message management
 
 **Questions for You:**
+
 1. Do companies need real-time monitoring, or is periodic processing sufficient?
 2. What KPIs and metrics do companies want to see?
 3. Should there be alerts for urgent voice messages?
 
 ### **4. Company Email Integration**
+
 **Current State:** Basic email verification system
 **What's Missing:**
+
 - Automated email forwarding setup
 - Company email domain verification
 - Email filtering and routing rules
 - Integration with popular email providers (Gmail, Outlook, etc.)
 
 **Questions for You:**
+
 1. Will companies forward emails manually or set up automatic forwarding?
 2. Do you need Gmail/Outlook API integration for seamless setup?
 3. Should the system support multiple email addresses per company?
@@ -147,19 +168,23 @@ Sonexa AI is positioned to become a **voice message monitoring SaaS** that proce
 The current subscription model is well-designed for a voice monitoring SaaS:
 
 ### **FREE Tier** (Current: 5 messages/month)
+
 - **Recommendation:** Perfect for testing and small businesses
 - **For Voice Monitoring:** Limit to 10-20 voice messages/month
 - **Features:** Basic AI processing, email notifications
 
 ### **BASIC Tier** ($19.99/month - 100 messages)
+
 - **For Voice Monitoring:** Increase to 200-500 voice messages/month
 - **Features:** Real-time processing, basic analytics, email integration
 
 ### **PREMIUM Tier** ($99.99/month - 1000 messages)
+
 - **For Voice Monitoring:** 2000-5000 voice messages/month
 - **Features:** Advanced AI analysis, priority processing, custom workflows
 
 ### **ENTERPRISE Tier** ($299.99/month - Unlimited)
+
 - **Features:** Unlimited processing, API access, dedicated support, custom integrations
 
 ---
@@ -167,25 +192,29 @@ The current subscription model is well-designed for a voice monitoring SaaS:
 ## 🔧 Required Technical Implementations
 
 ### **Priority 1: Email Processing Pipeline**
+
 ```
-Email Received → Parse Attachments → Extract Audio → 
-Validate Format → Queue for Processing → Transcribe → 
+Email Received → Parse Attachments → Extract Audio →
+Validate Format → Queue for Processing → Transcribe →
 AI Analysis → Decision (Approve/Reject) → Notify Company
 ```
 
 ### **Priority 2: Voice Message Classification**
+
 - Sentiment analysis (positive, negative, neutral)
 - Intent detection (complaint, inquiry, praise, urgent)
 - Category classification (sales, support, billing)
 - Priority scoring (high, medium, low)
 
 ### **Priority 3: Response Automation**
+
 - Template-based responses
 - AI-generated personalized responses
 - Escalation rules for human review
 - Integration with company CRM/helpdesk
 
 ### **Priority 4: Real-time Monitoring**
+
 - WebSocket connections for live updates
 - Push notifications for urgent messages
 - Dashboard with real-time metrics
@@ -196,33 +225,41 @@ AI Analysis → Decision (Approve/Reject) → Notify Company
 ## 💰 Business Model Questions
 
 ### **Target Market**
+
 **✅ ANSWERED:**
+
 1. **Company Size:** All business sizes (1-5000+ employees)
 2. **Industry Focus:** General business operations (NOT customer service)
 3. **Use Case:** Internal business voice message processing and management SaaS
 
 **📋 UPDATED POSITIONING:**
+
 - **Primary Value:** Streamline internal voice message workflows for businesses
 - **Key Benefits:** Automated transcription, smart categorization, business integration
 - **Target Users:** Operations managers, business owners, team leads
 
 ### **Pricing Strategy**
-**✅ ANSWERED:** 
+
+**✅ ANSWERED:**
+
 1. **Pricing Model:** Based on number of voice messages processed per month
 2. **Integration Needs:** Salesforce (CRM), Helpdesk tools, Slack (Communication)
 
 **📋 INTEGRATION EXPLANATIONS:**
+
 - **Salesforce (CRM):** Customer Relationship Management - stores customer data, sales leads, contact info. Integration would push transcribed voice messages to customer records
-- **Helpdesk (Zendesk/Freshdesk):** Support ticket management systems. Integration would create support tickets from voice messages or attach transcriptions to existing tickets  
+- **Helpdesk (Zendesk/Freshdesk):** Support ticket management systems. Integration would create support tickets from voice messages or attach transcriptions to existing tickets
 - **Slack/Teams:** Business communication platforms. Integration would send notifications and summaries of processed voice messages to relevant team channels
 
 **📋 UPDATED PRICING TIERS:**
+
 - **FREE:** 20 voice messages/month + basic AI responses
-- **BASIC ($19.99):** 500 voice messages/month + custom response templates + basic integrations  
+- **BASIC ($19.99):** 500 voice messages/month + custom response templates + basic integrations
 - **PREMIUM ($99.99):** 2000 voice messages/month + advanced AI responses + all integrations + priority processing
 - **ENTERPRISE ($299.99):** Unlimited messages + custom AI training + API access + custom workflows
 
 ### **Integration Needs**
+
 1. **CRM Systems:** Salesforce, HubSpot, Pipedrive integration?
 2. **Helpdesk Tools:** Zendesk, Freshdesk, Intercom integration?
 3. **Communication Platforms:** Slack, Teams notifications?
@@ -233,6 +270,7 @@ AI Analysis → Decision (Approve/Reject) → Notify Company
 ## 🚀 Development Roadmap Recommendation
 
 ### **Phase 1: MVP (4-6 weeks)**
+
 1. Complete email webhook integration
 2. Basic voice-to-text processing
 3. Simple approval/rejection workflow
@@ -240,6 +278,7 @@ AI Analysis → Decision (Approve/Reject) → Notify Company
 5. Basic monitoring dashboard
 
 ### **Phase 2: Enhanced Processing (4-6 weeks)**
+
 1. Advanced AI analysis and classification
 2. Automated response generation
 3. Integration with popular email providers
@@ -247,6 +286,7 @@ AI Analysis → Decision (Approve/Reject) → Notify Company
 5. Analytics and reporting
 
 ### **Phase 3: Enterprise Features (6-8 weeks)**
+
 1. CRM/helpdesk integrations
 2. Custom workflows and rules
 3. API for third-party integrations
@@ -254,6 +294,7 @@ AI Analysis → Decision (Approve/Reject) → Notify Company
 5. White-label options
 
 ### **Phase 4: Scale & Optimize (Ongoing)**
+
 1. Performance optimization
 2. Advanced AI models
 3. International expansion
@@ -265,16 +306,19 @@ AI Analysis → Decision (Approve/Reject) → Notify Company
 ## 🤔 Strategic Questions for Discussion
 
 ### **Product Strategy**
+
 1. **Primary Use Case:** Is this mainly for customer service optimization or sales lead capture?
 2. **Competition:** Who are your main competitors? (Gong.io for sales calls, Zendesk for support?)
 3. **Differentiation:** What makes this better than existing voice/email solutions?
 
 ### **Technical Approach**
+
 1. **Email Integration:** Webhook-based processing vs. API polling vs. email forwarding?
 2. **AI Accuracy:** How critical is perfect transcription vs. good-enough for categorization?
 3. **Scalability:** Expected volume? (100 companies × 1000 messages/month = 100K messages/month)
 
 ### **Go-to-Market**
+
 1. **Target Customer:** Who makes the buying decision? IT, Customer Service, or Management?
 2. **Sales Model:** Self-service signup vs. enterprise sales?
 3. **Onboarding:** How technical are your target users?
@@ -294,6 +338,7 @@ AI Analysis → Decision (Approve/Reject) → Notify Company
 ## 🏗️ **Email Domain Strategy - SONEXA.TECH**
 
 ### **Recommended Approach: Subdomain System**
+
 - **Main Domain:** `voice.sonexa.tech`
 - **Company Format:** `{companyname}@voice.sonexa.tech`
 - **Examples:**
@@ -302,6 +347,7 @@ AI Analysis → Decision (Approve/Reject) → Notify Company
   - `globalcorp@voice.sonexa.tech` (for Global Corp)
 
 ### **Implementation Requirements:**
+
 1. **DNS Setup:** Configure MX records for `voice.sonexa.tech`
 2. **Email Server:** Set up email receiving service (using Resend or similar)
 3. **Company Registration:** Generate unique company identifiers during signup
@@ -309,6 +355,7 @@ AI Analysis → Decision (Approve/Reject) → Notify Company
 5. **Validation:** Verify companies own the emails they're forwarding from
 
 ### **Alternative: Plus Addressing**
+
 - Format: `voice+companyname@sonexa.tech`
 - Simpler setup but less professional appearance
 
@@ -317,25 +364,30 @@ AI Analysis → Decision (Approve/Reject) → Notify Company
 ## 📧 **Gmail/Outlook API Integration Explained**
 
 ### **What API Integration Means:**
+
 Instead of manual email forwarding, companies would:
+
 1. **Authorize Your App:** Grant permission to access their email account
 2. **Automatic Monitoring:** Your system watches their inbox in real-time
 3. **Auto-Processing:** Voice messages are automatically detected and processed
 4. **No Manual Setup:** Zero configuration needed from the company
 
 ### **API Integration Benefits:**
+
 - **Real-time Processing:** Instant voice message detection
 - **Zero Manual Work:** No forwarding rules to set up
 - **Better Security:** OAuth-based authentication
 - **Enhanced Features:** Can mark emails as processed, create folders, etc.
 
 ### **API Integration Challenges:**
+
 - **Complex Implementation:** OAuth flows, token management, API rate limits
 - **Security Concerns:** Companies hesitant to grant email access
 - **Compliance Issues:** May require SOC2, GDPR compliance
 - **Maintenance Overhead:** API changes, token refresh, error handling
 
 ### **Recommendation:**
+
 - **Phase 1:** Start with email forwarding (simple, fast to implement)
 - **Phase 2:** Add API integration for enterprise customers who want seamless experience
 
@@ -344,6 +396,7 @@ Instead of manual email forwarding, companies would:
 ## 🤖 **AI Decision Logic - DETAILED SPECIFICATION**
 
 ### **Voice Message Processing Pipeline:**
+
 ```
 Forwarded Email → Extract Audio → Speech Recognition → Confidence Analysis → Content Analysis → Decision
 ```
@@ -351,12 +404,14 @@ Forwarded Email → Extract Audio → Speech Recognition → Confidence Analysis
 ### **Decision Categories:**
 
 #### **✅ AUTO-APPROVED** (Confidence > 80% + Coherent Content)
+
 - Clear speech detected
 - Recognizable words and sentences
 - Logical content structure
 - **Action:** Transcribe → Categorize → Generate AI Response Suggestion → Store → Notify Company
 
 #### **⚠️ FLAGGED FOR REVIEW** (Confidence 50-80% OR Unclear Content)
+
 - Partial speech recognition
 - Some unclear audio segments
 - Mixed languages or heavy accents
@@ -364,6 +419,7 @@ Forwarded Email → Extract Audio → Speech Recognition → Confidence Analysis
 - **Action:** Transcribe partial → Flag for human review → Queue for manual processing
 
 #### **❌ AUTO-REJECTED** (Confidence < 50% OR No Speech)
+
 - **Reasons for Rejection:**
   - Complete gibberish or nonsensical audio
   - No human speech detected (music, noise, silence)
@@ -373,9 +429,10 @@ Forwarded Email → Extract Audio → Speech Recognition → Confidence Analysis
 - **Action:** Log rejection reason → Notify company with explanation → Store for analytics
 
 ### **Categorization System:**
+
 - **🚨 URGENT:** Keywords like "emergency", "urgent", "ASAP", "immediately"
 - **💼 SALES:** Keywords like "quote", "price", "buy", "purchase", "interested"
-- **📞 GENERAL:** Standard business inquiries and information requests  
+- **📞 GENERAL:** Standard business inquiries and information requests
 - **😤 COMPLAINT:** Negative sentiment + keywords like "problem", "issue", "disappointed"
 - **❓ INFORMATION:** Questions and requests for details/clarification
 
@@ -384,36 +441,45 @@ Forwarded Email → Extract Audio → Speech Recognition → Confidence Analysis
 ## 💼 **Business Integrations - DETAILED EXPLANATIONS**
 
 ### **1. Salesforce (CRM) Integration**
+
 **What Salesforce Does:**
+
 - Stores customer information, contact details, purchase history
 - Tracks sales opportunities and deals in pipeline
 - Manages customer relationships and interactions
 
 **Integration Benefits for Voice Messages:**
+
 - **Auto-Link to Contacts:** Match voice message sender to existing customer records
 - **Lead Creation:** Convert voice inquiries into sales leads automatically
 - **Activity Logging:** Add voice message transcriptions to customer timeline
 - **Follow-up Automation:** Create tasks for sales team based on voice content
 
 ### **2. Helpdesk Integration (Zendesk/Freshdesk)**
+
 **What Helpdesk Tools Do:**
+
 - Manage customer support tickets and requests
 - Track issue resolution and response times
 - Organize support team workflows and assignments
 
 **Integration Benefits for Voice Messages:**
+
 - **Ticket Creation:** Convert voice complaints/issues into support tickets
 - **Priority Assignment:** Set ticket priority based on voice sentiment/urgency
 - **Context Addition:** Attach voice transcriptions to existing tickets
 - **Automated Routing:** Send voice messages to appropriate support agents
 
 ### **3. Slack/Teams Integration**
+
 **What Communication Platforms Do:**
+
 - Team messaging and collaboration
 - Channel-based organization by project/department
 - File sharing and workflow coordination
 
 **Integration Benefits for Voice Messages:**
+
 - **Real-time Notifications:** Alert relevant teams when urgent voice messages arrive
 - **Daily Summaries:** Send digest of processed voice messages to management channels
 - **Department Routing:** Send sales inquiries to #sales, complaints to #support
@@ -424,30 +490,35 @@ Forwarded Email → Extract Audio → Speech Recognition → Confidence Analysis
 ## 🔧 **DEPLOYMENT & INFRASTRUCTURE MIGRATION**
 
 ### **Digital Ocean Migration Plan**
+
 **Current State:** Azure-dependent infrastructure
 **Target State:** Digital Ocean-hosted with GitHub Student Pack benefits
 
 **📋 INFRASTRUCTURE COMPONENTS TO MIGRATE:**
 
 #### **1. Storage Migration**
+
 - **From:** Azure Blob Storage
 - **To:** Digital Ocean Spaces (S3-compatible)
 - **Benefits:** $200 free credits, same API as AWS S3
 - **Implementation:** Update storage service to use DO Spaces SDK
 
 #### **2. Database Hosting**
-- **From:** Self-managed PostgreSQL 
+
+- **From:** Self-managed PostgreSQL
 - **To:** Digital Ocean Managed PostgreSQL
 - **Benefits:** Automated backups, monitoring, security patches
 - **Cost:** $15/month for 1GB RAM, 1vCPU
 
 #### **3. Application Hosting**
+
 - **From:** Not deployed
 - **To:** Digital Ocean Droplets with Docker
 - **Configuration:** 2vCPU, 4GB RAM droplet ($24/month)
 - **Auto-scaling:** Load balancer + multiple droplets when needed
 
 #### **4. Domain & Email**
+
 - **Email Processing:** Configure MX records for `voice.sonexa.tech`
 - **SSL Certificates:** Free Let's Encrypt via Certbot
 - **CDN:** Digital Ocean CDN for static assets
@@ -459,29 +530,31 @@ Forwarded Email → Extract Audio → Speech Recognition → Confidence Analysis
 ### **🆓 FREE TIER SERVICES (Lifetime/Extended Free)**
 
 #### **1. Error Monitoring & Logging**
+
 - **Sentry:** Free error tracking, performance monitoring
   - Implementation: Add Sentry SDK to both frontend and backend
   - Benefits: Real-time error alerts, performance insights, release tracking
-  
 - **LogRocket:** Free user session recording (1,000 sessions/month)
   - Implementation: Add LogRocket script to frontend
   - Benefits: See exactly what users experience when bugs occur
 
 #### **2. Code Quality & Security**
+
 - **SonarCloud:** Free code quality analysis
   - Implementation: GitHub Actions integration for automated scans
   - Benefits: Code smells, bugs, security vulnerabilities detection
-  
 - **Snyk:** Free vulnerability scanning
   - Implementation: CI/CD pipeline integration
   - Benefits: Dependency vulnerability monitoring, automated PRs for fixes
 
 #### **3. Performance Monitoring**
+
 - **DataDog:** $200 credit for APM and infrastructure monitoring
   - Implementation: DataDog agent on droplets + APM libraries
   - Benefits: Detailed performance metrics, alerting, dashboards
 
 #### **4. CI/CD & Development**
+
 - **GitHub Actions:** Free for public repos, 2000 minutes/month for private
   - Implementation: Automated testing, building, deployment
   - Benefits: Continuous integration, automated deployments
@@ -489,16 +562,19 @@ Forwarded Email → Extract Audio → Speech Recognition → Confidence Analysis
 ### **💰 CREDITED SERVICES**
 
 #### **1. Infrastructure**
+
 - **Digital Ocean:** $200 credit (covers ~4-5 months of hosting)
 - **Namecheap:** Free domain for 1 year
 - **Cloudflare:** Free CDN and DDoS protection
 
 #### **2. Development Tools**
+
 - **JetBrains:** Free IntelliJ IDEA Ultimate
 - **GitKraken:** Free Git GUI Pro
 - **Canva:** Free Pro account for marketing materials
 
 #### **3. Communication & Productivity**
+
 - **Slack:** Free upgrade to paid plan
 - **Notion:** Free Pro plan for documentation
 - **Figma:** Free Pro plan for UI/UX design
@@ -506,6 +582,7 @@ Forwarded Email → Extract Audio → Speech Recognition → Confidence Analysis
 ### **📊 MONITORING & ANALYTICS STACK**
 
 #### **Application Performance Monitoring**
+
 ```yaml
 Frontend Monitoring:
   - Sentry (React integration)
@@ -526,6 +603,7 @@ Infrastructure Monitoring:
 ```
 
 #### **Security Monitoring**
+
 ```yaml
 Code Security:
   - Snyk (dependency scanning)
@@ -545,6 +623,7 @@ Runtime Security:
 ## 🚀 **UPDATED DEPLOYMENT ARCHITECTURE**
 
 ### **Production Stack**
+
 ```yaml
 Frontend (Next.js):
   - Digital Ocean Droplet
@@ -578,29 +657,30 @@ Monitoring:
 ```
 
 ### **CI/CD Pipeline**
+
 ```yaml
 GitHub Actions Workflow:
   1. Code Quality:
-     - ESLint + TypeScript checks
-     - SonarCloud analysis
-     - Snyk security scan
-     
+    - ESLint + TypeScript checks
+    - SonarCloud analysis
+    - Snyk security scan
+
   2. Testing:
-     - Backend unit tests
-     - Frontend component tests
-     - Integration tests
-     - E2E tests (Playwright)
-     
+    - Backend unit tests
+    - Frontend component tests
+    - Integration tests
+    - E2E tests (Playwright)
+
   3. Building:
-     - Docker image creation
-     - Digital Ocean Registry push
-     - Vulnerability scanning
-     
+    - Docker image creation
+    - Digital Ocean Registry push
+    - Vulnerability scanning
+
   4. Deployment:
-     - Blue-green deployment
-     - Health checks
-     - Rollback capability
-     - Slack notifications
+    - Blue-green deployment
+    - Health checks
+    - Rollback capability
+    - Slack notifications
 ```
 
 ---
@@ -608,12 +688,15 @@ GitHub Actions Workflow:
 ## 📋 **IMPLEMENTATION PRIORITIES - UPDATED**
 
 ### **Phase 1: Infrastructure Setup (Week 1)**
+
 1. **Digital Ocean Setup**
+
    - Create droplet, database, spaces, registry
    - Configure DNS records for `sonexa.tech`
    - Set up SSL certificates
 
 2. **Monitoring Integration**
+
    - Sentry error tracking setup
    - DataDog agent installation
    - GitHub Actions configuration
@@ -624,7 +707,9 @@ GitHub Actions Workflow:
    - Test file upload/download functionality
 
 ### **Phase 2: Email & Voice Processing (Week 2-3)**
+
 1. **Email Domain Setup**
+
    - Configure `voice.sonexa.tech` MX records
    - Set up email webhook processing
    - Test email forwarding workflow
@@ -635,7 +720,9 @@ GitHub Actions Workflow:
    - Confidence scoring and decision logic
 
 ### **Phase 3: Monitoring & Quality (Week 4)**
+
 1. **Comprehensive Monitoring**
+
    - LogRocket session recording
    - Performance monitoring dashboards
    - Alert configuration
@@ -646,7 +733,9 @@ GitHub Actions Workflow:
    - Rate limiting and security headers
 
 ### **Phase 4: Production Optimization (Week 5-6)**
+
 1. **Performance Optimization**
+
    - Database query optimization
    - Caching layer implementation
    - CDN configuration
@@ -661,6 +750,7 @@ GitHub Actions Workflow:
 ## 💰 **COST ANALYSIS - DIGITAL OCEAN**
 
 ### **Monthly Costs (after GitHub Student Pack credits)**
+
 ```yaml
 Infrastructure:
   - Droplet (2vCPU, 4GB): $24/month
@@ -680,6 +770,7 @@ Total: ~$44/month (vs Azure ~$80-120/month)
 ```
 
 ### **Scaling Cost Projections**
+
 ```yaml
 50 Companies (15K messages/month):
   - Additional droplet: +$24/month
@@ -699,12 +790,14 @@ Total: ~$44/month (vs Azure ~$80-120/month)
 ## 🛡️ **SECURITY & COMPLIANCE FEATURES**
 
 ### **Student Pack Security Tools**
+
 - **Snyk:** Continuous vulnerability monitoring
 - **SonarCloud:** Code security analysis
 - **GitHub Advanced Security:** Secret scanning, code scanning
 - **GitGuardian:** Git secret detection
 
 ### **Production Security**
+
 - **SSL/TLS:** Let's Encrypt certificates with auto-renewal
 - **WAF:** CloudFlare Web Application Firewall
 - **DDoS Protection:** CloudFlare + Digital Ocean
@@ -712,6 +805,7 @@ Total: ~$44/month (vs Azure ~$80-120/month)
 - **Data Encryption:** At rest (database) and in transit (SSL)
 
 ### **Compliance Ready**
+
 - **GDPR:** Data retention policies, user data export
 - **CCPA:** User privacy controls
 - **SOC 2 Type II:** Security controls documentation
@@ -722,6 +816,7 @@ Total: ~$44/month (vs Azure ~$80-120/month)
 ## 📁 **UPDATED FILE ORGANIZATION STRATEGY**
 
 ### **Clean Environment Structure**
+
 ```
 sonexa-ai/
 ├── backend/
@@ -766,6 +861,7 @@ sonexa-ai/
 ## 🔧 **ENVIRONMENT VARIABLES - COMPREHENSIVE SPECIFICATION**
 
 ### **Backend Environment (.env.example)**
+
 ```bash
 # =====================================
 # DATABASE CONFIGURATION
@@ -773,9 +869,9 @@ sonexa-ai/
 DATABASE_URL=postgresql://sonexa_user:secure_password@localhost:5432/sonexa
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
-DATABASE_NAME=sonexa
+DB_NAME=sonexa
 DATABASE_USER=sonexa_user
-DATABASE_PASSWORD=secure_password
+DB_PASSWORD=secure_password
 DATABASE_POOL_SIZE=10
 
 # =====================================
@@ -885,6 +981,7 @@ RATE_LIMIT_BURST_SIZE=10
 ```
 
 ### **Frontend Environment (.env.example)**
+
 ```bash
 # =====================================
 # API CONFIGURATION
@@ -957,6 +1054,7 @@ NEXT_PUBLIC_STATIC_ASSETS_URL=https://assets.sonexa.tech
 ```
 
 ### **Deploy Environment (.env.example)**
+
 ```bash
 # =====================================
 # DIGITAL OCEAN INFRASTRUCTURE
@@ -1001,8 +1099,9 @@ FAIL2BAN_ENABLED=true
 ## 🐳 **DOCKER COMPOSE STRATEGY - DETAILED**
 
 ### **Backend docker-compose.yml** (Development Services)
+
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   # PostgreSQL Database
@@ -1051,8 +1150,8 @@ services:
     image: mailhog/mailhog:latest
     container_name: sonexa-mailhog-dev
     ports:
-      - "1025:1025"  # SMTP server
-      - "8025:8025"  # Web UI
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI
     networks:
       - sonexa-backend
     restart: unless-stopped
@@ -1069,8 +1168,9 @@ networks:
 ```
 
 ### **Frontend docker-compose.yml** (Development)
+
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   # Next.js Development Server
@@ -1134,8 +1234,9 @@ networks:
 ```
 
 ### **deploy/docker-compose.local.yml** (Full Local Stack)
+
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   # Database
@@ -1235,6 +1336,7 @@ networks:
 ## 🔧 **DNS CONFIGURATION - VOICE.SONEXA.TECH**
 
 ### **Required DNS Records**
+
 ```dns
 # MX Records for Email Processing
 voice.sonexa.tech.    MX    10    mail.sonexa.tech.
@@ -1256,6 +1358,7 @@ default._domainkey.voice.sonexa.tech. TXT "v=DKIM1; k=rsa; p=YOUR_DKIM_PUBLIC_KE
 ```
 
 ### **Cloudflare Configuration**
+
 ```yaml
 DNS_RECORDS:
   - type: MX
@@ -1263,17 +1366,17 @@ DNS_RECORDS:
     content: mail.sonexa.tech
     priority: 10
     proxied: false
-    
+
   - type: A
     name: mail
     content: YOUR_DROPLET_IP
     proxied: false
-    
+
   - type: CNAME
     name: api
     content: sonexa.tech
     proxied: true
-    
+
 SECURITY_SETTINGS:
   ssl: Full (strict)
   always_use_https: true
@@ -1287,6 +1390,7 @@ SECURITY_SETTINGS:
 ## 📊 **MONITORING PRIORITY IMPLEMENTATION**
 
 ### **Phase 1: Sentry (Error Tracking) - FREE**
+
 ```yaml
 Implementation_Priority: 1
 Cost: $0 (up to 5,000 errors/month)
@@ -1303,6 +1407,7 @@ Integration:
 ```
 
 ### **Phase 2: SonarCloud (Code Quality) - FREE**
+
 ```yaml
 Implementation_Priority: 2
 Cost: $0 (open source projects)
@@ -1319,6 +1424,7 @@ Integration:
 ```
 
 ### **Phase 3: DataDog (Performance) - $200 CREDIT**
+
 ```yaml
 Implementation_Priority: 3
 Cost: $0 (with GitHub Student Pack credit)
@@ -1335,6 +1441,7 @@ Integration:
 ```
 
 ### **Phase 4: LogRocket (User Sessions) - FREE**
+
 ```yaml
 Implementation_Priority: 4
 Cost: $0 (1,000 sessions/month)
@@ -1355,6 +1462,7 @@ Integration:
 ## 💰 **COST OPTIMIZATION - EMAIL PROVIDER ANALYSIS**
 
 ### **Resend (CHOSEN - Best Value)**
+
 ```yaml
 Pricing:
   - Free: 3,000 emails/month
@@ -1377,6 +1485,7 @@ Webhook_Capabilities:
 ```
 
 ### **Alternative Comparison**
+
 ```yaml
 SendGrid:
   - Cost: $19.95/month (40,000 emails)
