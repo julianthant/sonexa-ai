@@ -60,6 +60,12 @@ coverage/
 *.crt
 *.p12
 
+# Sensitive files
+**/secrets.txt
+**/credentials.txt
+GITHUB_SECRETS_CHECKLIST.md
+KEYCLOAK_SETUP_GUIDE.md
+
 # Local development
 /local/
 /dev-data/
