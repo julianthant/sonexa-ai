@@ -4,6 +4,9 @@ FROM maven:3.9-eclipse-temurin-17-alpine AS base
 =======
 # Multi-stage build for Spring Boot application
 FROM eclipse-temurin:17-jdk-alpine AS build
+<<<<<<< HEAD
+>>>>>>> 874431b7b2918034a2459313aa87d82245987fbe
+=======
 >>>>>>> 874431b7b2918034a2459313aa87d82245987fbe
 
 WORKDIR /app
@@ -19,6 +22,9 @@ FROM base AS development
 # Copy source code
 COPY src ./src
 =======
+# Make Maven wrapper executable
+RUN chmod +x ./mvnw
+
 # Make Maven wrapper executable
 RUN chmod +x ./mvnw
 
