@@ -1,0 +1,50 @@
+# Maven build output
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDE files
+.vscode
+.idea
+*.iws
+*.iml
+*.ipr
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Documentation
+README.md
+*.md
+docs
+
+# Test files
+**/*Test.java
+**/*Tests.java
+**/src/test/
+
+# Logs
+logs
+*.log
+
+# Cache
+.m2
+.gradle
+
+# Misc
+.dockerignore
+Dockerfile*
+docker-compose* 

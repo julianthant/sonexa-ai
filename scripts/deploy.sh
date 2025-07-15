@@ -44,13 +44,34 @@ docker-compose -f docker-compose.prod.yml down || true
 echo "🧹 Cleaning up old images..."
 docker image prune -f
 
-# Build and start services
+# Pre-pull base images for faster builds
+echo "📦 Pre-pulling base images..."
+docker pull node:18-alpine &
+docker pull maven:3.9-eclipse-temurin-17-alpine &
+docker pull eclipse-temurin:17-jre-alpine &
+docker pull quay.io/keycloak/keycloak:latest &
+docker pull nginx:alpine &
+wait
+
+# Build and start services with parallel builds
 echo "🔨 Building and starting services..."
-docker-compose -f docker-compose.prod.yml up -d --build
+DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker-compose -f docker-compose.prod.yml build --parallel
+
+# Start services
+echo "🚀 Starting services..."
+docker-compose -f docker-compose.prod.yml up -d
 
 # Wait for services to be healthy
 echo "⏳ Waiting for services to start..."
-sleep 30
+docker-compose -f docker-compose.prod.yml logs -f --tail=20 &
+LOG_PID=$!
+
+# Wait for backend health check
+echo "🔍 Waiting for backend to be healthy..."
+timeout 180s bash -c 'until curl -f http://localhost:8080/actuator/health; do sleep 5; done'
+
+# Kill log process
+kill $LOG_PID 2>/dev/null || true
 
 # Check service status
 echo "📊 Checking service status..."

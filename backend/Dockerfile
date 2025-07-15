@@ -3,24 +3,34 @@ FROM maven:3.9-eclipse-temurin-17-alpine AS build
 
 WORKDIR /app
 
-# Copy pom.xml and download dependencies
+# Copy pom.xml and download dependencies (cached layer)
 COPY pom.xml .
-RUN mvn dependency:go-offline
+COPY .mvn .mvn
+COPY mvnw .
+COPY mvnw.cmd .
+
+# Download dependencies (this layer will be cached if pom.xml doesn't change)
+RUN mvn dependency:go-offline -B
 
 # Copy source code
 COPY src src
 
-# Build the application
-RUN mvn clean package -DskipTests
+# Build the application with optimizations
+RUN mvn clean package -DskipTests -B -T 1C
 
 # Development stage
 FROM maven:3.9-eclipse-temurin-17-alpine AS development
 
 WORKDIR /app
 
-# Copy pom.xml and download dependencies
+# Copy Maven files (cached layer)
 COPY pom.xml .
-RUN mvn dependency:go-offline
+COPY .mvn .mvn
+COPY mvnw .
+COPY mvnw.cmd .
+
+# Download dependencies (cached layer)
+RUN mvn dependency:go-offline -B
 
 # Copy source code
 COPY src ./src
