@@ -35,7 +35,7 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sonexa-backend:latest
+          tags: julianzaw/sonexa-ai-backend-production:latest
 
       - name: Deploy to Digital Ocean
         uses: appleboy/ssh-action@v0.1.5
@@ -44,7 +44,7 @@ jobs:
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/sonexa-backend:latest
+            docker pull julianzaw/sonexa-ai-backend-production:latest
             docker stop sonexa-backend || true
             docker rm sonexa-backend || true
-            docker run -d --name sonexa-backend -p 8080:8080 --env-file /home/sonexa/.env ${{ secrets.DOCKERHUB_USERNAME }}/sonexa-backend:latest
+            docker run -d --name sonexa-backend -p 8080:8080 --env-file /home/sonexa/.env julianzaw/sonexa-ai-backend-production:latest
